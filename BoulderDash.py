@@ -18,7 +18,6 @@ class World():
         dirt = sprite_sheet_image.subsurface(32, 224, 32, 32)
         rock = sprite_sheet_image.subsurface(0, 224, 32, 32)
         
-    
         for i in range(0, sprite_sheet_image.get_width(), 32):
             # Extract the frame from the sprite sheet and add it to the list
             diamond_frames.append(sprite_sheet_image.subsurface(pygame.Rect(i, 320, 32, 32)))
@@ -66,12 +65,17 @@ class World():
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
                 if tile == 5:
+                    """
                     img = pygame.transform.scale(diamond_frames[0], (32, 32))
                     img_rect = img.get_rect()
                     img_rect.x = col_count * tile_size
                     img_rect.y = row_count * tile_size
                     tile = (img, img_rect)
-                    self.tile_list.append(tile)     
+                    self.tile_list.append(tile)
+                    """
+                    blob = TheDiamonds(col_count * tile_size, row_count * tile_size + 15)
+                    blob_group.add(blob)
+                        
                 col_count += 1
             row_count += 1
 
@@ -79,6 +83,35 @@ class World():
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
             #pygame.draw.rect(screen, (255,255,255), tile[1], 2)
+            
+            
+class TheDiamonds(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        diamond_frames = []
+        sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
+        for i in range(0, sprite_sheet_image.get_width(), 32):
+            # Extract the frame from the sprite sheet and add it to the list
+            diamond_frames.append(sprite_sheet_image.subsurface(pygame.Rect(i, 320, 32, 32)))
+        
+        #self.image = pygame.image.load('images/sprites_sheet.png')
+        self.image = diamond_frames[0]
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.move_direction = 1
+        self.move_counter = 0
+        self.frame = 0
+        
+    def update(self):
+        self.rect.x += self.move_direction
+        self.move_counter += 1
+        if abs(self.move_counter) > 150:
+            self.move_direction *= -1
+            self.move_counter *= -1
+        pygame.draw.rect(screen, 1, self.rect)
+        
+        #screen.blit(self.diamond_frames[self.frame], self.rect)
 
 class MyLemmings():
     def __init__(self, x, y):
@@ -223,6 +256,7 @@ world_data = [
 ]
 
 #exit_img = pygame.image.load('img/exit.png')
+blob_group = pygame.sprite.Group()
 
 world = World(world_data)
 
@@ -236,7 +270,9 @@ while run:
 
 
     world.draw()
-    
+    blob_group.update()
+    blob_group.draw(screen)
+
 
 
     #boulder.update()
