@@ -54,86 +54,105 @@ class World():
                 if tile == 5:
                     blob = TheDiamonds(col_count * tile_size, row_count * tile_size)
                     blob_group.add(blob)
-                        
+                if tile == 6:
+                    blob = TheExit(col_count * tile_size, row_count * tile_size)
+                    The_exit.add(blob)        
                 col_count += 1
             row_count += 1
 
     def draw(self):
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
+            
+
+class TheExit(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.exit_frames = []
+        self.index = 0
+        self.counter = 0
+        #load images
+        sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
+        for i in range(0, sprite_sheet_image.get_width(), 32):
+            self.exit_frames.append(sprite_sheet_image.subsurface(pygame.Rect(i, 288, 32, 32)))
+        
+        self.image = self.exit_frames[self.index]
+        self.rect = self.image.get_rect()
+        self.rect.center = [x+16, y+16]
+        
+    def update(self):
+        
+        #handle the animation
+        self.counter += 1
+        flap_cooldown = 3
+        if self.counter > flap_cooldown:
+            self.counter = 0
+            self.index += 1
+            if self.index >= len(self.exit_frames):
+                self.index = 0
+        self.image = self.exit_frames[self.index]
                        
             
 class TheDiamonds(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.diamond_frames = []
+        self.index = 0
+        self.counter = 0
+        #load images
         sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
         for i in range(0, sprite_sheet_image.get_width(), 32):
             self.diamond_frames.append(sprite_sheet_image.subsurface(pygame.Rect(i, 320, 32, 32)))
         
-        self.image = self.diamond_frames[5]
+        self.image = self.diamond_frames[self.index]
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        
-        self.animation_steps = 8
-        self.last_update = pygame.time.get_ticks()
-        self.animation_cooldown = 100
-        self.frame = 0
-        
-    def blinking_diamonds(self):
-        current_time = pygame.time.get_ticks()
-        if current_time - self.last_update >= self.animation_cooldown:
-            self.frame += 1
-            self.last_update = current_time
-            if self.frame >= len(self.diamond_frames) :
-                self.frame = 0
+        self.rect.center = [x+16, y+16]
         
     def update(self):
-        """
-        self.rect.x += self.move_direction
-        self.move_counter += 1
-        if abs(self.move_counter) > 150:
-            self.move_direction *= -1
-            self.move_counter *= -1
-        pygame.draw.rect(screen, 1, self.rect)
-        """
         
-        self.blinking_diamonds()        
-        screen.blit(self.diamond_frames[self.frame], self.rect)
+        #handle the animation
+        self.counter += 1
+        flap_cooldown = 2
+        if self.counter > flap_cooldown:
+            self.counter = 0
+            self.index += 1
+            if self.index >= len(self.diamond_frames):
+                self.index = 0
+        self.image = self.diamond_frames[self.index]
         
 
-class MyLemmings():
+class MyBoulder():
     def __init__(self, x, y):
-        img = pygame.image.load('imgages/sprites_sheet.png')
+        #img = pygame.image.load('imgages/sprites_sheet.png')
         #self.lemmingsStop = pygame.image.load('img/lemmings-stop.png')
         #self.lemStop = pygame.transform.scale(self.lemmingsStop, (50, 70))
+        self.walkink_boulder_frames =[]
+        #load images
+        sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
+        for i in range(0, sprite_sheet_image.get_width(), 32):
+            self.walkink_boulder_frames.append(sprite_sheet_image.subsurface(pygame.Rect(i, 160, 32, 32)))
                 
-        self.image = pygame.transform.scale(img, (50, 70))
+        self.image = self.walkink_boulder_frames[1]
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.width = self.image.get_width()
         self.height = self.image.get_height()
 
-        self.animation_list =[]
-        self.animation_steps = 9
-        self.last_update = pygame.time.get_ticks()
-        self.animation_cooldown = 100
-        self.frame = 0
         
+        self.animation_steps = 8
+        self.last_update = pygame.time.get_ticks()
+        self.animation_cooldown = 10
+        self.frame = 0
 
-        #for x in range(self.animation_steps) :
-        #    self.animation_list.append(get_image(sprite_sheet_image, x, 160, 240, 0.3))
-
-    """def walking_boulder_animation(self):
+    def walking_boulder_animation(self):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_update >= self.animation_cooldown:
             self.frame += 1
             self.last_update = current_time
-            if self.frame >= len(self.animation_list) :
+            if self.frame >= len(self.walkink_boulder_frames) :
                 self.frame = 0
-    """    
+       
 
     def update(self):
         dx = 0
@@ -142,17 +161,18 @@ class MyLemmings():
         key = pygame.key.get_pressed()
         if key[pygame.K_LEFT]:
             dx -= 3
-            #self.walking_boulder_animation()
+            self.walking_boulder_animation()
             
         if key[pygame.K_RIGHT]:
             dx += 3
-            #self.walking_boulder_animation()
+            self.walking_boulder_animation()
   
         if key[pygame.K_DOWN]:
             dy += 3
         if key[pygame.K_UP]:
             dy -= 3
         
+        """
         for tile in world.tile_list:
             if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.width, self.height):
                 dy = 0
@@ -161,16 +181,16 @@ class MyLemmings():
                 self.sol = True
             elif tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
                 dx = 0
-                
+         """       
 
         self.rect.x += dx
         self.rect.y += dy
 
         # display Boulder
         if (key[pygame.K_LEFT]) : 
-            screen.blit(pygame.transform.flip(self.animation_list[self.frame], True, False), self.rect)
+            screen.blit(pygame.transform.flip(self.walkink_boulder_frames[self.frame], True, False), self.rect)
         elif (key[pygame.K_RIGHT]) :
-            screen.blit(self.animation_list[self.frame], self.rect)
+            screen.blit(self.walkink_boulder_frames[self.frame], self.rect)
         else :
             #screen.blit(static_boulder, self.rect)
             pass
@@ -191,8 +211,6 @@ tile_size = 32
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Boulder Dash')
 
-#boulder = MyLemmings()
-
 world_data = [
 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
@@ -210,26 +228,28 @@ world_data = [
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
 [1, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 1], 
 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
 
 
 blob_group = pygame.sprite.Group()
+The_exit = pygame.sprite.Group()
 world = World(world_data)
+Boulder = MyBoulder(100,100)
 
 run = True
 while run:
@@ -239,8 +259,10 @@ while run:
     world.draw()
     blob_group.update()
     blob_group.draw(screen)
+    The_exit.update()
+    The_exit.draw(screen)
 
-    #TheDiamonds.update()
+    Boulder.update()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
