@@ -49,7 +49,7 @@ class World():
                     img_rect = img.get_rect()
                     img_rect.x = col_count * tile_size
                     img_rect.y = row_count * tile_size
-                    tile = (img, img_rect)
+                    tile = (img, img_rect, '4')
                     self.tile_list.append(tile)
                 if tile == 5:
                     blob = TheDiamonds(col_count * tile_size, row_count * tile_size)
@@ -59,7 +59,9 @@ class World():
                     The_exit.add(blob)        
                 col_count += 1
             row_count += 1
-
+        # print(self.tile_list)
+        # (<Surface(32x32x24 SW)>, <rect(96, 352, 32, 32)>, '4')
+        
     def draw(self):
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
@@ -126,9 +128,12 @@ class MyBoulder():
         #img = pygame.image.load('imgages/sprites_sheet.png')
         #self.lemmingsStop = pygame.image.load('img/lemmings-stop.png')
         #self.lemStop = pygame.transform.scale(self.lemmingsStop, (50, 70))
+        
+        
         self.walkink_boulder_frames =[]
         #load images
         sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
+        self.static_boulder = sprite_sheet_image.subsurface(0, 0, 32, 32)
         for i in range(0, sprite_sheet_image.get_width(), 32):
             self.walkink_boulder_frames.append(sprite_sheet_image.subsurface(pygame.Rect(i, 160, 32, 32)))
                 
@@ -169,8 +174,10 @@ class MyBoulder():
   
         if key[pygame.K_DOWN]:
             dy += 3
+            self.walking_boulder_animation()
         if key[pygame.K_UP]:
             dy -= 3
+            self.walking_boulder_animation()
         
         """
         for tile in world.tile_list:
@@ -178,10 +185,9 @@ class MyBoulder():
                 dy = 0
                 dx += 3
                 
-                self.sol = True
             elif tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
                 dx = 0
-         """       
+        """        
 
         self.rect.x += dx
         self.rect.y += dy
@@ -191,8 +197,12 @@ class MyBoulder():
             screen.blit(pygame.transform.flip(self.walkink_boulder_frames[self.frame], True, False), self.rect)
         elif (key[pygame.K_RIGHT]) :
             screen.blit(self.walkink_boulder_frames[self.frame], self.rect)
+        elif (key[pygame.K_DOWN]) :
+            screen.blit(self.walkink_boulder_frames[self.frame], self.rect)
+        elif (key[pygame.K_UP]) :
+            screen.blit(self.walkink_boulder_frames[self.frame], self.rect)
         else :
-            #screen.blit(static_boulder, self.rect)
+            screen.blit(self.static_boulder, self.rect)
             pass
 
 
