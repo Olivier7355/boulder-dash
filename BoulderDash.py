@@ -9,7 +9,6 @@ class World():
         static_boulder = sprite_sheet_image.subsurface(0, 0, 32, 32)
         wall = sprite_sheet_image.subsurface(32, 192, 32, 32)
         brick = sprite_sheet_image.subsurface(96, 192, 32, 32)
-        #dirt = sprite_sheet_image.subsurface(32, 224, 32, 32)
         rock = sprite_sheet_image.subsurface(0, 224, 32, 32)
 
         row_count = 0
@@ -17,16 +16,8 @@ class World():
             col_count = 0
             for tile in row:
                 if tile == 0:
-                    """
-                    img = pygame.transform.scale(dirt, (tile_size, tile_size))
-                    img_rect = img.get_rect()
-                    img_rect.x = col_count * tile_size
-                    img_rect.y = row_count * tile_size
-                    tile = (img, img_rect)
-                    self.tile_list.append(tile)
-                    """
-                    dirt = TheDirt(col_count * tile_size, row_count * tile_size)
-                    dirt_group.add(dirt)
+                    self.dirt = TheDirt(col_count * tile_size, row_count * tile_size)
+                    dirt_group.add(self.dirt)
                     
                 if tile == 1:
                     img = pygame.transform.scale(wall, (tile_size, tile_size))
@@ -57,8 +48,8 @@ class World():
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
                 if tile == 5:
-                    diamonds = TheDiamonds(col_count * tile_size, row_count * tile_size)
-                    diamonds_group.add(diamonds)
+                    self.diamonds = TheDiamonds(col_count * tile_size, row_count * tile_size)
+                    diamonds_group.add(self.diamonds)
                 if tile == 6:
                     blob = TheExit(col_count * tile_size, row_count * tile_size)
                     The_exit.add(blob)        
@@ -150,6 +141,7 @@ class MyBoulder():
                 
         self.image = self.walkink_boulder_frames[1]
         self.rect = self.image.get_rect()
+        self.rect = pygame.Rect(0, 0, 25, 25)
         self.rect.x = x
         self.rect.y = y
         self.width = self.image.get_width()
@@ -158,7 +150,7 @@ class MyBoulder():
         self.last_update = pygame.time.get_ticks()
         self.animation_cooldown = 10
         self.frame = 0
-        self.diamonds_collected = 0
+        
 
     def walking_boulder_animation(self):
         current_time = pygame.time.get_ticks()
@@ -197,15 +189,6 @@ class MyBoulder():
            
         self.rect.x += dx
         self.rect.y += dy
-        
-        #check for collision with diamonds
-        if pygame.sprite.spritecollide(self, diamonds_group, False):
-            self.diamonds_collected +=1
-            #replace diamonds with a black square
-            #print(diamonds_group.rect.x, diamonds_group.rect.y)
-            
-            
-            print('Diamdond !')
 
         # display Boulder
         if (key[pygame.K_LEFT]) : 
@@ -227,6 +210,7 @@ fps = 30
 screen_width = 1000
 screen_height = 1000
 tile_size = 32
+diamonds_collected = 0
 
 
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -287,6 +271,18 @@ while run:
     dirt_group.draw(screen)
 
     Boulder.update()
+    
+    #Check if any of the diamond sprites collide with the player sprite
+    for i, world.diamonds in enumerate(diamonds_group):
+        if pygame.sprite.collide_rect(Boulder, world.diamonds):
+            diamonds_group.remove(world.diamonds)
+            diamonds_collected +=1
+            print (diamonds_collected)
+            
+    #Check if any of the dirt sprites collide with the player sprite
+    for i, world.dirt in enumerate(dirt_group):
+        if pygame.sprite.collide_rect(Boulder, world.dirt):
+            dirt_group.remove(world.dirt)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
