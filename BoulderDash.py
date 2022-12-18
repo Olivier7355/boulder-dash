@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+from pygame import mixer
 
 class World():
     def __init__(self, data):
@@ -27,12 +28,15 @@ class World():
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
                 if tile == 2:
+                    pass
+                    """
                     img = pygame.transform.scale(static_boulder, (32, 32))
                     img_rect = img.get_rect()
                     img_rect.x = col_count * tile_size
                     img_rect.y = row_count * tile_size
                     tile = (img, img_rect)
                     self.tile_list.append(tile)
+                    """
                 if tile == 3:
                     img = pygame.transform.scale(rock, (32, 32))
                     img_rect = img.get_rect()
@@ -51,8 +55,8 @@ class World():
                     self.diamonds = TheDiamonds(col_count * tile_size, row_count * tile_size)
                     diamonds_group.add(self.diamonds)
                 if tile == 6:
-                    blob = TheExit(col_count * tile_size, row_count * tile_size)
-                    The_exit.add(blob)        
+                    self.sortie = TheExit(col_count * tile_size, row_count * tile_size)
+                    The_exit.add(self.sortie)        
                 col_count += 1
             row_count += 1
 
@@ -202,13 +206,15 @@ class MyBoulder():
         else :
             screen.blit(self.static_boulder, self.rect)
 
-
+pygame.mixer.pre_init(44100, -16, 2, 512)
+mixer.init()
 pygame.init()
+
 clock = pygame.time.Clock()
 fps = 30
 
 screen_width = 1000
-screen_height = 1000
+screen_height = 1040
 tile_size = 32
 diamonds_collected = 0
 
@@ -258,6 +264,33 @@ dirt_group = pygame.sprite.Group()
 world = World(world_data)
 Boulder = MyBoulder(100,100)
 
+#create dummy diamond for showing the score
+score_diamond = TheDiamonds(tile_size // 2 , 1001)
+diamonds_group.add(score_diamond)
+
+#define colours
+white = (255, 255, 255)
+blue = (0, 0, 255)
+
+#define font
+font = pygame.font.SysFont('Bauhaus 93', 70)
+font_score = pygame.font.SysFont('Bauhaus 93', 50)
+
+#load sounds
+#pygame.mixer.music.load('img/music.wav')
+#pygame.mixer.music.play(-1, 0.0, 5000)
+diamond_fx = pygame.mixer.Sound('sounds/boulder_sounds_diamond.ogg')
+diamond_fx.set_volume(0.5)
+dirt_walk_fx = pygame.mixer.Sound('sounds/boulder_sounds_walk_dirt.ogg')
+dirt_walk_fx.set_volume(0.5)
+finish_fx = pygame.mixer.Sound('sounds/boulder_sounds_finished.ogg')
+finish_fx.set_volume(0.5)
+
+
+def draw_text(text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x, y))
+
 run = True
 while run:
 
@@ -277,12 +310,21 @@ while run:
         if pygame.sprite.collide_rect(Boulder, world.diamonds):
             diamonds_group.remove(world.diamonds)
             diamonds_collected +=1
-            print (diamonds_collected)
+            diamond_fx.play()
+    draw_text(str(diamonds_collected), font_score, white, 60, 1001)
             
     #Check if any of the dirt sprites collide with the player sprite
     for i, world.dirt in enumerate(dirt_group):
         if pygame.sprite.collide_rect(Boulder, world.dirt):
             dirt_group.remove(world.dirt)
+            dirt_walk_fx.play()
+            
+    #Check if any of the exit sprites collide with the player sprite whan all diamonds have been collected
+    for i, world.sortie in enumerate(The_exit):
+        if (pygame.sprite.collide_rect(Boulder, world.sortie)) and (diamonds_collected ==9):
+            dirt_group.remove(world.sortie)
+            draw_text('WELL DONE!', font, white, (screen_width // 2) - 140, screen_height // 2)
+            finish_fx.play()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
