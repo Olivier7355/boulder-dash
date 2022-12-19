@@ -171,17 +171,17 @@ class MyBoulder():
         
         #get keypresses
         key = pygame.key.get_pressed()
-        if key[pygame.K_LEFT]:
-            dx -= 3
+        if key[pygame.K_LEFT] and not (key[pygame.K_DOWN] or key[pygame.K_UP]):
+            dx -= 32
             self.walking_boulder_animation()          
-        if key[pygame.K_RIGHT]:
-            dx += 3
+        if key[pygame.K_RIGHT] and not (key[pygame.K_DOWN] or key[pygame.K_UP]):
+            dx += 32
             self.walking_boulder_animation()
         if key[pygame.K_DOWN]:
-            dy += 3
+            dy += 32
             self.walking_boulder_animation()
         if key[pygame.K_UP]:
-            dy -= 3
+            dy -= 32
             self.walking_boulder_animation()
         
         #check for collision with briks and wall
@@ -211,7 +211,7 @@ mixer.init()
 pygame.init()
 
 clock = pygame.time.Clock()
-fps = 30
+fps = 7
 
 screen_width = 1000
 screen_height = 1040
@@ -262,7 +262,7 @@ The_exit = pygame.sprite.Group()
 dirt_group = pygame.sprite.Group()
 
 world = World(world_data)
-Boulder = MyBoulder(100,100)
+Boulder = MyBoulder(64,128)
 
 #create dummy diamond for showing the score
 score_diamond = TheDiamonds(tile_size // 2 , 1001)
@@ -319,6 +319,10 @@ while run:
             dirt_group.remove(world.dirt)
             dirt_walk_fx.play()
             
+    # Check if any of the rock bottom sprites collide with the dirt
+    # if not rock should move from y+32
+    
+       
     #Check if any of the exit sprites collide with the player sprite whan all diamonds have been collected
     for i, world.sortie in enumerate(The_exit):
         if (pygame.sprite.collide_rect(Boulder, world.sortie)) and (diamonds_collected ==9):
