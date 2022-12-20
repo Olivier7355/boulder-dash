@@ -1,3 +1,10 @@
+"""
+Boulder Dash clone.
+This module is in development.
+Written by Olivier Charles (olivier7355@gmail.com)
+License: GNU GPL 3.0, see LICENSE
+"""
+
 import pygame
 from pygame.locals import *
 from pygame import mixer
@@ -321,8 +328,12 @@ while run:
             
     # Check if any of the rock bottom sprites collide with the dirt
     # if not rock should move from y+32
+    for i, world.diamonds in enumerate(diamonds_group):
+        if pygame.sprite.collide_rect(world.diamonds, world.dirt):
+            print('ok')
+            
     
-       
+    
     #Check if any of the exit sprites collide with the player sprite whan all diamonds have been collected
     for i, world.sortie in enumerate(The_exit):
         if (pygame.sprite.collide_rect(Boulder, world.sortie)) and (diamonds_collected ==9):
@@ -333,5 +344,6 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+
     pygame.display.update()
 pygame.quit()
