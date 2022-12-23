@@ -1,0 +1,21 @@
+; Boulder Dash clone
+; By Olivier Charles olivier7355@gmail.com
+;
+; Everything after the ; is a comment and will be ignored by the game that
+; reads in this file.
+
+
+; 1
+
+###############################
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxx#
+#xxxxxxxxxxxxxxxxxxxxoxxxxxxxx#
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxx#
+#xxxxxxx@xxxxxxxxxxxxxxxxxxxxx#
+#xxxxxxx===xxxxoxxxxxxxxxxxxxx#
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxx#
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxx#
+#xxxxooxxxxxxxxxxxxxxxxxxxxxxx#
+#xxxxoxxxxxxxxxxxxxxxxxxxxexxx#
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxx#
+###############################
