@@ -3,8 +3,9 @@
 # By Olivier Charles olivier7355@gmail.com
 # Released under a GNU GPL 3.0 license
 
-import pygame, sys
+import pygame, sys, os
 from pygame.locals import *
+from pygame import mixer
 
 FPS = 30 # frames per second to update the screen
 WINWIDTH = 800 # width of the program's window, in pixels
@@ -35,18 +36,19 @@ def terminate():
 def startScreen():
     """Display the start screen (which has the title and instructions)
     until the player presses a key. Returns None."""
+    
+    #load sounds
+    title_intro_fx = pygame.mixer.Sound('sounds/boulder_sounds_intro.ogg')
+    title_intro_fx.set_volume(0.2)
 
     # Position the title image.
     titleRect = IMAGESDICT['title'].get_rect()
-    topCoord = 0 # topCoord tracks where to position the top of the text
+    topCoord = 150 # topCoord tracks where to position the top of the text
     titleRect.top = topCoord
     titleRect.centerx = HALF_WINWIDTH
     topCoord += titleRect.height
 
-    instructionText = ['Push the stars over the marks.',
-                       'Arrow keys to move, WASD for camera control, P to change character.',
-                       'Backspace to reset level, Esc to quit.',
-                       'N for next level, B to go back a level.']
+    instructionText = ['Pres any key to start']
 
     # Start with drawing a blank color to the entire window:
     DISPLAYSURF.fill(BGCOLOR)
@@ -58,13 +60,14 @@ def startScreen():
     for i in range(len(instructionText)):
         instSurf = BASICFONT.render(instructionText[i], 1, TEXTCOLOR)
         instRect = instSurf.get_rect()
-        topCoord += 10 # 10 pixels will go in between each line of text.
+        topCoord += 70 # 10 pixels will go in between each line of text.
         instRect.top = topCoord
         instRect.centerx = HALF_WINWIDTH
         topCoord += instRect.height # Adjust for the height of the line.
         DISPLAYSURF.blit(instSurf, instRect)
 
     while True: # Main loop for the start screen.
+        title_intro_fx.play()
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
@@ -77,17 +80,141 @@ def startScreen():
         pygame.display.update()
         FPSCLOCK.tick()
         
+        
+def drawMap(mapObj, gameStateObj, goals):
+    """Draws the map to a Surface object, including the player and
+    stars. This function does not call pygame.display.update(), nor
+    does it draw the "Level" and "Steps" text in the corner."""
+
+    # mapSurf will be the single Surface object that the tiles are drawn
+    # on, so that it is easy to position the entire map on the DISPLAYSURF
+    # Surface object. First, the width and height must be calculated.
+    mapSurfWidth = len(mapObj) * TILEWIDTH
+    mapSurfHeight = (len(mapObj[0]) - 1) + TILEHEIGHT
+    mapSurf = pygame.Surface((mapSurfWidth, mapSurfHeight))
+    mapSurf.fill(BGCOLOR) # start with a blank color on the surface.
+
+    # Draw the tile sprites onto this surface.
+    for x in range(len(mapObj)):
+        for y in range(len(mapObj[x])):
+            spaceRect = pygame.Rect((x * TILEWIDTH, y, TILEWIDTH, TILEHEIGHT))
+            if mapObj[x][y] in TILEMAPPING:
+                baseTile = TILEMAPPING[mapObj[x][y]]
+
+            # First draw the base ground/wall tile.
+            mapSurf.blit(baseTile, spaceRect)
+
+            if (x, y) in gameStateObj['stars']:
+                if (x, y) in goals:
+                    # A goal AND star are on this space, draw goal first.
+                    mapSurf.blit(IMAGESDICT['covered goal'], spaceRect)
+                # Then draw the star sprite.
+                mapSurf.blit(IMAGESDICT['star'], spaceRect)
+            elif (x, y) in goals:
+                # Draw a goal without a star on it.
+                mapSurf.blit(IMAGESDICT['uncovered goal'], spaceRect)
+
+            # Last draw the player on the board.
+            if (x, y) == gameStateObj['player']:
+                # Note: The value "currentImage" refers
+                # to a key in "PLAYERIMAGES" which has the
+                # specific player image we want to show.
+                mapSurf.blit(PLAYERIMAGES[currentImage], spaceRect)
+
+    return mapSurf
 
 def readLevelsFile(filename):
-    pass
+    assert os.path.exists(filename), 'Cannot find the level file: %s' % (filename)
+    mapFile = open(filename, 'r')
+    # Each level must end with a blank line
+    content = mapFile.readlines() + ['\r\n']
+    mapFile.close()
+    
+    levels = [] # Will contain a list of level objects.
+    levelNum = 0
+    mapTextLines = [] # contains the lines for a single level's map.
+    mapObj = [] # the map object made from the data in mapTextLines
+    for lineNum in range(len(content)):
+        # Process each line that was in the level file.
+        line = content[lineNum].rstrip('\r\n')
+
+        if ';' in line:
+            # Ignore the ; lines, they're comments in the level file.
+            line = line[:line.find(';')]
+
+        if line != '':
+            # This line is part of the map.
+            mapTextLines.append(line)
+        elif line == '' and len(mapTextLines) > 0:
+            # A blank line indicates the end of a level's map in the file.
+            # Convert the text in mapTextLines into a level object.
+
+            # Find the longest row in the map.
+            maxWidth = -1
+            for i in range(len(mapTextLines)):
+                if len(mapTextLines[i]) > maxWidth:
+                    maxWidth = len(mapTextLines[i])
+            # Add spaces to the ends of the shorter rows. This
+            # ensures the map will be rectangular.
+            for i in range(len(mapTextLines)):
+                mapTextLines[i] += ' ' * (maxWidth - len(mapTextLines[i]))
+
+            # Convert mapTextLines to a map object.
+            for x in range(len(mapTextLines[0])):
+                mapObj.append([])
+            for y in range(len(mapTextLines)):
+                for x in range(maxWidth):
+                    mapObj[x].append(mapTextLines[y][x])
+
+            # Loop through the spaces in the map and find the @, ., and $
+            # characters for the starting game state.
+            startx = None # The x and y for the player's starting position
+            starty = None
+            exitx = None # The x and y for the exit position
+            exity = None
+            rocks = [] # list of (x, y) tuples for each rock.
+            diamonds = [] # list of (x, y) for each diamond.
+            for x in range(maxWidth):
+                for y in range(len(mapObj[x])):
+                    if mapObj[x][y] in ('@'):
+                        # '@' is player
+                        startx = x
+                        starty = y
+                    if mapObj[x][y] in ('o'):
+                        # 'o' is rock
+                        rocks.append((x, y))
+                    if mapObj[x][y] in ('e'):
+                        # 'e' is the exit
+                        exitx = x
+                        exity = y
+
+            # Create level object and starting game state object.
+            gameStateObj = {'player': (startx, starty),
+                            'stepCounter': 0,
+                            'rocks': rocks}
+            levelObj = {'width': maxWidth,
+                        'height': len(mapObj),
+                        'mapObj': mapObj,
+                        'startState': gameStateObj}
+
+            levels.append(levelObj)
+
+            # Reset the variables for reading the next map.
+            mapTextLines = []
+            mapObj = []
+            gameStateObj = {}
+            levelNum += 1
+            print(levels)
+    return levels
 
 
 def runLevel(levels, levelNum):
-    pass    
+    global currentImage
+    
     
     
 def main():
-    global FPSCLOCK, DISPLAYSURF, IMAGESDICT, TILEMAPPING, BASICFONT
+    global FPSCLOCK, DISPLAYSURF, IMAGESDICT, TILEMAPPING, BASICFONT, PLAYERIMAGES, currentImage
 
      # Pygame initialization and basic set up of the global variables.
     pygame.init()
@@ -95,29 +222,42 @@ def main():
     DISPLAYSURF = pygame.display.set_mode((WINWIDTH, WINHEIGHT))
 
     pygame.display.set_caption('Boulder Dash')
-    BASICFONT = pygame.font.Font('freesansbold.ttf', 28)
+    BASICFONT = pygame.font.Font('freesansbold.ttf', 38)
+    
+    # Load Pygame Surface objects
+    sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
+    static_boulder = sprite_sheet_image.subsurface(0, 0, 32, 32)
+    wall = sprite_sheet_image.subsurface(32, 192, 32, 32)
+    brick = sprite_sheet_image.subsurface(96, 192, 32, 32)
+    rock = sprite_sheet_image.subsurface(0, 224, 32, 32)
+    dirt = sprite_sheet_image.subsurface(32, 224, 32, 32)
+    intro_title = pygame.image.load('star_title.png')
     
     # A global dict value that will contain all the Pygame
     # Surface objects returned by pygame.image.load().
-    IMAGESDICT = {'uncovered goal': pygame.image.load('star_title.png'),
-                  'covered goal': pygame.image.load('star_title.png'),
-                  'star': pygame.image.load('star_title.png'),
-                  'title': pygame.image.load('star_title.png')}
+    IMAGESDICT = {'boulder': static_boulder,
+                  'wall': wall,
+                  'brick': brick,
+                  'rock': rock,
+                  'dirt': dirt,
+                  'title': intro_title}
     
     # These dict values are global, and map the character that appears
     # in the level file to the Surface object it represents.
-    """TILEMAPPING = {'x': IMAGESDICT['corner'],
+    TILEMAPPING = {'x': IMAGESDICT['dirt'],
                    '#': IMAGESDICT['wall'],
-                   'o': IMAGESDICT['inside floor'],
-                   ' ': IMAGESDICT['outside floor']}
-    """
+                   '=': IMAGESDICT['brick'],
+                   'o': IMAGESDICT['rock']}
+    
+    PLAYERIMAGES = [IMAGESDICT['boulder']]
+    
     startScreen() # show the title screen until the user presses a key
     
     # Read in the levels from the text file. See the readLevelsFile() for
     # details on the format of this file and how to make your own levels.
-    levels = readLevelsFile('starPusherLevels.txt')
+    levels = readLevelsFile('BoulderLevels.txt')
     currentLevelIndex = 0
-    
+        
     # The main game loop. This loop runs a single level, when the user
     # finishes that level, the next/previous level is loaded.
     while True: # main game loop
