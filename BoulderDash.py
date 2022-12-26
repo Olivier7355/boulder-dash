@@ -81,47 +81,6 @@ def startScreen():
         FPSCLOCK.tick()
         
         
-def drawMap(mapObj, gameStateObj, goals):
-    """Draws the map to a Surface object, including the player and
-    stars. This function does not call pygame.display.update(), nor
-    does it draw the "Level" and "Steps" text in the corner."""
-
-    # mapSurf will be the single Surface object that the tiles are drawn
-    # on, so that it is easy to position the entire map on the DISPLAYSURF
-    # Surface object. First, the width and height must be calculated.
-    mapSurfWidth = len(mapObj) * TILEWIDTH
-    mapSurfHeight = (len(mapObj[0]) - 1) + TILEHEIGHT
-    mapSurf = pygame.Surface((mapSurfWidth, mapSurfHeight))
-    mapSurf.fill(BGCOLOR) # start with a blank color on the surface.
-
-    # Draw the tile sprites onto this surface.
-    for x in range(len(mapObj)):
-        for y in range(len(mapObj[x])):
-            spaceRect = pygame.Rect((x * TILEWIDTH, y, TILEWIDTH, TILEHEIGHT))
-            if mapObj[x][y] in TILEMAPPING:
-                baseTile = TILEMAPPING[mapObj[x][y]]
-
-            # First draw the base ground/wall tile.
-            mapSurf.blit(baseTile, spaceRect)
-
-            if (x, y) in gameStateObj['stars']:
-                if (x, y) in goals:
-                    # A goal AND star are on this space, draw goal first.
-                    mapSurf.blit(IMAGESDICT['covered goal'], spaceRect)
-                # Then draw the star sprite.
-                mapSurf.blit(IMAGESDICT['star'], spaceRect)
-            elif (x, y) in goals:
-                # Draw a goal without a star on it.
-                mapSurf.blit(IMAGESDICT['uncovered goal'], spaceRect)
-
-            # Last draw the player on the board.
-            if (x, y) == gameStateObj['player']:
-                # Note: The value "currentImage" refers
-                # to a key in "PLAYERIMAGES" which has the
-                # specific player image we want to show.
-                mapSurf.blit(PLAYERIMAGES[currentImage], spaceRect)
-
-    return mapSurf
 
 def readLevelsFile(filename):
     assert os.path.exists(filename), 'Cannot find the level file: %s' % (filename)
@@ -208,9 +167,56 @@ def readLevelsFile(filename):
     return levels
 
 
+def drawMap(mapObj, gameStateObj):
+    # Draws the map to a Surface object, including the player. This function does not call pygame.display.update().
+    mapSurfWidth = len(mapObj) * TILEWIDTH
+    mapSurfHeight = (len(mapObj[0]) - 1) * TILEHEIGHT
+    mapSurf = pygame.Surface((mapSurfWidth, mapSurfHeight))
+    mapSurf.fill(BGCOLOR) # start with a blank color on the surface.
+    
+    # Draw the tile sprites onto this surface.
+    for x in range(len(mapObj)):
+        for y in range(len(mapObj[x])):
+            spaceRect = pygame.Rect((x * TILEWIDTH, y * TILEHEIGHT, TILEWIDTH, TILEHEIGHT))
+            #print(mapObj[x][y], end=' ')
+            if mapObj[x][y] in TILEMAPPING:
+                baseTile = TILEMAPPING[mapObj[x][y]]
+
+            # First draw the base ground/wall tile.
+            mapSurf.blit(baseTile, spaceRect)
+
+            # Last draw the player on the board.
+            if (x, y) == gameStateObj['player']:
+                # Note: The value "currentImage" refers
+                # to a key in "PLAYERIMAGES" which has the
+                # specific player image we want to show.
+                mapSurf.blit(PLAYERIMAGES[currentImage], spaceRect)
+
+    return mapSurf
+
+    
+
 def runLevel(levels, levelNum):
     global currentImage
+    levelObj = levels[levelNum]
+    mapObj = levelObj['mapObj']
+    gameStateObj = levelObj['startState']
+    drawMap(mapObj, gameStateObj)
     
+    while True: # main game loop
+        for event in pygame.event.get(): # event handling loop
+            if event.type == QUIT:
+                # Player clicked the "X" at the corner of the window.
+                terminate()
+                
+        mapSurf = drawMap(mapObj, gameStateObj)        
+        mapSurfRect = mapSurf.get_rect()
+        
+        # Draw mapSurf to the DISPLAYSURF Surface object.
+        DISPLAYSURF.blit(mapSurf, mapSurfRect)
+        
+        pygame.display.update() # draw DISPLAYSURF to the screen.
+        FPSCLOCK.tick()
     
     
 def main():
@@ -220,6 +226,7 @@ def main():
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINWIDTH, WINHEIGHT))
+    currentImage = 0
 
     pygame.display.set_caption('Boulder Dash')
     BASICFONT = pygame.font.Font('freesansbold.ttf', 38)
@@ -251,7 +258,7 @@ def main():
     
     PLAYERIMAGES = [IMAGESDICT['boulder']]
     
-    startScreen() # show the title screen until the user presses a key
+    #startScreen() # show the title screen until the user presses a key
     
     # Read in the levels from the text file. See the readLevelsFile() for
     # details on the format of this file and how to make your own levels.
