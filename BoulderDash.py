@@ -170,7 +170,7 @@ def readLevelsFile(filename):
 def drawMap(mapObj, gameStateObj):
     # Draws the map to a Surface object, including the player. This function does not call pygame.display.update().
     mapSurfWidth = len(mapObj) * TILEWIDTH
-    mapSurfHeight = (len(mapObj[0]) - 1) * TILEHEIGHT
+    mapSurfHeight = (len(mapObj[0])) * TILEHEIGHT
     mapSurf = pygame.Surface((mapSurfWidth, mapSurfHeight))
     mapSurf.fill(BGCOLOR) # start with a blank color on the surface.
     
@@ -194,27 +194,134 @@ def drawMap(mapObj, gameStateObj):
 
     return mapSurf
 
+
+def isWallorBrick(mapObj, x, y):
+    """Returns True if the (x, y) position on
+    the map is a wall or a brick, otherwise return False."""
+    if x < 0 or x >= len(mapObj) or y < 0 or y >= len(mapObj[x]):
+        return False # x and y aren't actually on the map.
+    elif mapObj[x][y] in ('#', '='):
+        return True # wall or brick is blocking
+    return False
+   
     
+def RockisBlocked (mapObj, gameStateObj, x, y):
+    """Returns True if the (x, y) position on the map is
+    blocked by a dirt, a wall or a brick, otherwise return False."""
+
+    if mapObj[x][y] in ('#', '=', 'x', 'o'):
+        return True
+
+    elif x < 0 or x >= len(mapObj) or y < 0 or y >= len(mapObj[x]):
+        return True # x and y aren't actually on the map.
+
+    #elif (x, y) in gameStateObj['rocks']:
+    #    return True # a rock is blocking
+
+    return False
+
+def makeMove(mapObj, gameStateObj, playerMoveTo):
+    """Given a map and game state object, see if it is possible for the
+    player to make the given move. If it is, then change the player's
+    position. If not, do nothing.
+
+    Returns True if the player moved, otherwise False."""
+
+    # Make sure the player can move in the direction they want.
+    playerx, playery = gameStateObj['player']
+   
+    rocks = gameStateObj['rocks']
+
+    # The code for handling each of the directions is so similar aside
+    # from adding or subtracting 1 to the x/y coordinates. We can
+    # simplify it by using the xOffset and yOffset variables.
+    if playerMoveTo == UP:
+        xOffset = 0
+        yOffset = -1
+    elif playerMoveTo == RIGHT:
+        xOffset = 1
+        yOffset = 0
+    elif playerMoveTo == DOWN:
+        xOffset = 0
+        yOffset = 1
+    elif playerMoveTo == LEFT:
+        xOffset = -1
+        yOffset = 0
+        
+    # See if the player can move in that direction.
+    if isWallorBrick(mapObj, playerx + xOffset, playery + yOffset):
+        return False
+    else:   
+        if (playerx + xOffset, playery + yOffset) in rocks:
+            # There is a rock in the way, see if the player can push it.
+            if not RockisBlocked(mapObj, gameStateObj, playerx + (xOffset*2), playery + (yOffset*2)):
+                # Move the rock.
+                ind = rocks.index((playerx + xOffset, playery + yOffset))
+                rocks[ind] = (rocks[ind][0] + xOffset, rocks[ind][1] + yOffset)
+                mapObj[playerx+ (xOffset*2)][playery] ='o'
+                                    
+            else:
+                return False        
+         
+        # Move the player upwards.
+        gameStateObj['player'] = (playerx + xOffset, playery + yOffset)
+        
+        # Clean the space at the previous player position
+        mapObj[playerx][playery] ='s'
+        return True
+ 
 
 def runLevel(levels, levelNum):
     global currentImage
     levelObj = levels[levelNum]
     mapObj = levelObj['mapObj']
     gameStateObj = levelObj['startState']
-    drawMap(mapObj, gameStateObj)
+    mapNeedsRedraw = True # set to True to call drawMap()
+    levelIsComplete = False
     
     while True: # main game loop
+        # Reset these variables:
+        playerMoveTo = None
+        keyPressed = False
+        
         for event in pygame.event.get(): # event handling loop
             if event.type == QUIT:
                 # Player clicked the "X" at the corner of the window.
                 terminate()
                 
-        mapSurf = drawMap(mapObj, gameStateObj)        
-        mapSurfRect = mapSurf.get_rect()
+            elif event.type == KEYDOWN:
+                # Handle key presses
+                keyPressed = True
+                if event.key == K_LEFT:
+                    playerMoveTo = LEFT
+                elif event.key == K_RIGHT:
+                    playerMoveTo = RIGHT
+                elif event.key == K_UP:
+                    playerMoveTo = UP
+                elif event.key == K_DOWN:
+                    playerMoveTo = DOWN
+                
+        if playerMoveTo != None and not levelIsComplete:
+            # If the player pushed a key to move, make the move
+            # (if possible) and push any stars that are pushable.
+            moved = makeMove(mapObj, gameStateObj, playerMoveTo)
+
+            if moved:
+                # increment the step counter.
+                gameStateObj['stepCounter'] += 1
+                mapNeedsRedraw = True
+                
+        DISPLAYSURF.fill(BGCOLOR)
         
+        if mapNeedsRedraw:
+            mapSurf = drawMap(mapObj, gameStateObj)
+            mapNeedsRedraw = False
+        
+        
+        mapSurfRect = mapSurf.get_rect()
         # Draw mapSurf to the DISPLAYSURF Surface object.
         DISPLAYSURF.blit(mapSurf, mapSurfRect)
-        
+                
         pygame.display.update() # draw DISPLAYSURF to the screen.
         FPSCLOCK.tick()
     
@@ -238,6 +345,7 @@ def main():
     brick = sprite_sheet_image.subsurface(96, 192, 32, 32)
     rock = sprite_sheet_image.subsurface(0, 224, 32, 32)
     dirt = sprite_sheet_image.subsurface(32, 224, 32, 32)
+    space = sprite_sheet_image.subsurface(0, 192, 32, 32)
     intro_title = pygame.image.load('star_title.png')
     
     # A global dict value that will contain all the Pygame
@@ -247,6 +355,7 @@ def main():
                   'brick': brick,
                   'rock': rock,
                   'dirt': dirt,
+                  'space': space,
                   'title': intro_title}
     
     # These dict values are global, and map the character that appears
@@ -254,6 +363,7 @@ def main():
     TILEMAPPING = {'x': IMAGESDICT['dirt'],
                    '#': IMAGESDICT['wall'],
                    '=': IMAGESDICT['brick'],
+                   's': IMAGESDICT['space'],
                    'o': IMAGESDICT['rock']}
     
     PLAYERIMAGES = [IMAGESDICT['boulder']]
