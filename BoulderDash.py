@@ -270,6 +270,32 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
         mapObj[playerx][playery] ='s'
         return True
  
+ 
+def rockHasToFall(mapObj, gameStateObj):
+    rocks = gameStateObj['rocks']
+    
+    for x, y in rocks :
+        
+        # The rock move to y+1 if this space is empty 
+        if mapObj[x][y+1] == 's' :
+            mapObj[x][y] = 's'
+            mapObj[x][y+1] = 'o'
+            # update the rocks position in the list of rocks
+            ind = rocks.index((x, y))
+            rocks[ind] = (x,y+1)
+            return True
+        
+        # The rock move to x-1 and y+1 if this space is empty and a rock is at x,y+1
+        if (mapObj[x-1][y+1] == 's') and (mapObj[x][y+1] == 'o') and (mapObj[x-1][y] == 's') :
+            mapObj[x][y] = 's'
+            mapObj[x-1][y+1] = 'o'
+            # update the rocks position in the list of rocks
+            ind = rocks.index((x, y))
+            rocks[ind] = (x-1,y+1)
+            return True
+         
+    return False
+ 
 
 def runLevel(levels, levelNum):
     global currentImage
@@ -310,6 +336,12 @@ def runLevel(levels, levelNum):
                 # increment the step counter.
                 gameStateObj['stepCounter'] += 1
                 mapNeedsRedraw = True
+                
+        # Check if there is a space below a rock. In that case, the rock has to fall.
+        spaceBelowRock = rockHasToFall(mapObj, gameStateObj)
+        
+        if spaceBelowRock:
+            mapNeedsRedraw = True
                 
         DISPLAYSURF.fill(BGCOLOR)
         
