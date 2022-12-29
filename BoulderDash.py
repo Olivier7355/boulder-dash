@@ -142,6 +142,9 @@ def readLevelsFile(filename):
                     if mapObj[x][y] in ('o'):
                         # 'o' is rock
                         rocks.append((x, y))
+                    if mapObj[x][y] in ('d'):
+                        # 'd' is diamond
+                        diamonds.append((x, y))
                     if mapObj[x][y] in ('e'):
                         # 'e' is the exit
                         exitx = x
@@ -150,7 +153,8 @@ def readLevelsFile(filename):
             # Create level object and starting game state object.
             gameStateObj = {'player': (startx, starty),
                             'stepCounter': 0,
-                            'rocks': rocks}
+                            'rocks': rocks,
+                            'diamonds': diamonds}
             levelObj = {'width': maxWidth,
                         'height': len(mapObj),
                         'mapObj': mapObj,
@@ -207,9 +211,9 @@ def isWallorBrick(mapObj, x, y):
     
 def RockisBlocked (mapObj, gameStateObj, x, y):
     """Returns True if the (x, y) position on the map is
-    blocked by a dirt, a wall or a brick, otherwise return False."""
+    blocked by a dirt, a wall, a brick or a diamond otherwise return False."""
 
-    if mapObj[x][y] in ('#', '=', 'x', 'o'):
+    if mapObj[x][y] in ('#', '=', 'x', 'o', 'd'):
         return True
 
     elif x < 0 or x >= len(mapObj) or y < 0 or y >= len(mapObj[x]):
@@ -231,6 +235,7 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
     playerx, playery = gameStateObj['player']
    
     rocks = gameStateObj['rocks']
+    diamonds = gameStateObj['diamonds']
 
     # The code for handling each of the directions is so similar aside
     # from adding or subtracting 1 to the x/y coordinates. We can
@@ -261,7 +266,20 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
                 mapObj[playerx+ (xOffset*2)][playery] ='o'
                                     
             else:
-                return False        
+                return False
+            
+        # There is a diamon in the way    
+        if (playerx + xOffset, playery + yOffset) in diamonds:
+            mapObj[playerx + xOffset][playery] ='s'
+            #diamondsCatched += 1
+            #print(diamondsCatched)
+            
+            # Delete the diamond from the list of diamonds in the curent level.
+            ind = diamonds.index((playerx + xOffset, playery + yOffset))
+            del diamonds[ind]
+            if not diamonds :
+                showExit = True 
+            
          
         # Move the player upwards.
         gameStateObj['player'] = (playerx + xOffset, playery + yOffset)
@@ -293,17 +311,38 @@ def rockHasToFall(mapObj, gameStateObj):
             ind = rocks.index((x, y))
             rocks[ind] = (x-1,y+1)
             return True
+        
+        # The rock move to x+1 and y+1 if this space is empty and rocks are at x,y+1 and x-1,y+1
+        if (mapObj[x+1][y+1] == 's') and (mapObj[x][y+1] == 'o') and (mapObj[x-1][y+1] == 'o') and (mapObj[x-1][y] == 's'):
+            mapObj[x][y] = 's'
+            mapObj[x+1][y+1] = 'o'
+            # update the rocks position in the list of rocks
+            ind = rocks.index((x, y))
+            rocks[ind] = (x+1,y+1)
+            return True
+        
+        # The rock move to x+1,y+1 if this space is empty a rocks is at x,y+1 and not a space at x-1,y
+        if (mapObj[x+1][y+1] == 's') and (mapObj[x][y+1] == 'o') and (mapObj[x-1][y] != 's') and (mapObj[x+1][y] == 's'):
+            mapObj[x][y] = 's'
+            mapObj[x+1][y+1] = 'o'
+            # update the rocks position in the list of rocks
+            ind = rocks.index((x, y))
+            rocks[ind] = (x+1,y+1)
+            return True        
          
     return False
  
 
 def runLevel(levels, levelNum):
-    global currentImage
+    global currentImage, diamondsCatched
     levelObj = levels[levelNum]
     mapObj = levelObj['mapObj']
     gameStateObj = levelObj['startState']
     mapNeedsRedraw = True # set to True to call drawMap()
     levelIsComplete = False
+    last_update = pygame.time.get_ticks()
+    animation_cooldown = 40
+    diamondsCatched = 0
     
     while True: # main game loop
         # Reset these variables:
@@ -336,13 +375,17 @@ def runLevel(levels, levelNum):
                 # increment the step counter.
                 gameStateObj['stepCounter'] += 1
                 mapNeedsRedraw = True
-                
-        # Check if there is a space below a rock. In that case, the rock has to fall.
-        spaceBelowRock = rockHasToFall(mapObj, gameStateObj)
         
-        if spaceBelowRock:
-            mapNeedsRedraw = True
-                
+        # Create a cool down period for the animations of the falling rocks        
+        current_time = pygame.time.get_ticks()
+        if current_time - last_update >= animation_cooldown:
+            last_update = current_time
+                    
+            # Check if there is a space below a rock. In that case, the rock has to fall.
+            spaceBelowRock = rockHasToFall(mapObj, gameStateObj)   
+            if spaceBelowRock:
+                mapNeedsRedraw = True
+                                
         DISPLAYSURF.fill(BGCOLOR)
         
         if mapNeedsRedraw:
@@ -378,6 +421,8 @@ def main():
     rock = sprite_sheet_image.subsurface(0, 224, 32, 32)
     dirt = sprite_sheet_image.subsurface(32, 224, 32, 32)
     space = sprite_sheet_image.subsurface(0, 192, 32, 32)
+    diamond = sprite_sheet_image.subsurface(0, 320, 32, 32)
+    exit = sprite_sheet_image.subsurface(64, 192, 32, 32)
     intro_title = pygame.image.load('star_title.png')
     
     # A global dict value that will contain all the Pygame
@@ -388,6 +433,8 @@ def main():
                   'rock': rock,
                   'dirt': dirt,
                   'space': space,
+                  'diamond': diamond,
+                  'exit': exit,
                   'title': intro_title}
     
     # These dict values are global, and map the character that appears
@@ -396,6 +443,8 @@ def main():
                    '#': IMAGESDICT['wall'],
                    '=': IMAGESDICT['brick'],
                    's': IMAGESDICT['space'],
+                   'd': IMAGESDICT['diamond'],
+                   'e': IMAGESDICT['exit'],
                    'o': IMAGESDICT['rock']}
     
     PLAYERIMAGES = [IMAGESDICT['boulder']]
@@ -428,10 +477,6 @@ def main():
         elif result == 'reset':
             pass # Do nothing. Loop re-calls runLevel() to reset the level
      
-
-
-
-
 
 if __name__ == '__main__':
     main()
