@@ -3,28 +3,32 @@
 ;
 ; Everything after the ; is a comment and will be ignored by the game that
 ; reads in this file.
+; https://www.boulder-dash.nl/down/maps/PeterLiepa/BoulderDash01.html
+; https://boulder-dash.com/online-free-game/
 
 
 ; 1
 
-#########################
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#xxxxxxxxxxxxxxxxxxxxoxx#
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#xxxxxxx@xxxxxxxxxxxxxxx#
-#xxxxxxx===xxxxoxxxxxxxx#
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#xxxxooxxxxxxxxxxxxxxxxx#
-#xxxxoxxxxxxxxxxxxxxexxx#
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#xxxxxx====xxxxxxxxxxxxx#
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#xxxxxxxxxxxxxxxxxxxxxxx#
-#########################
+########################################
+#xxxxxxsxxdxosxxxxxoxoxxxxxxxsxxxxoxxxx#
+#xo@oxxxxxxsxxxxxxxxxodxxoxxxxsxxxxxsxx#
+#xxxxxxxxxxsxxoxxxxxoxoxxoxxxxxxxxoxxxx#
+#oxooxxxxxxxxxoxxxxxxoxxoxxxxoxxxoxxxxx#
+#oxsoxxxxxxxxxsoxxoxxxxxxxxoxxxxxxoxoox#
+#xxxsxxoxxxxxxxxoxxxxxoxsoxxxxxxxxoxoox#
+#==============================xxxoxxox#
+#xsxxxoxxdxsxxoxoxxxxxxxxxxdxodxxxxxxsx#
+#xxdxxxxxoxxxxxsxxxxxxxxoosoxxoxxxxoxxx#
+#xxxoxxoxoxxxxxxxxxxxxxxosxoxxoxxxxxxxx#
+#xoxxxxxoxxxxxxxxoooxxxxxxxoxxsxdxxxxox#
+#xdxxsxxoxssxxxxxoxodxxdxxxxoxxxoxxdxsx#
+#xsoxxxxxxxxxxxxxxosoxxoxxxxxxxxdxxxxxo#
+#xxxxxxxx==============================#
+#soxxxxxxxxxoxxxdxxxxoxxxxxoxxxoxxxxxxx#
+#soxxxxxxxxxsoxxoxxxxxxxxoxxxxxxoxooxxe#
+#xsxxoxxxxxxxxoxxxxxoxssxxxxdxxxoxooxxx#
+#xxxxodxxoxxxxxxxxoxxxxxxoxodxxxxxxoxxx#
+#xxxsxxoxsxxoxooxxxxxxxxxoxodxxxxxxsxxo#
+#xdxxxxsxxxxxsxxxxxxxxxsxoxxoxxxxoxxxox#
+########################################
+

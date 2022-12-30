@@ -8,7 +8,7 @@ from pygame.locals import *
 from pygame import mixer
 
 FPS = 30 # frames per second to update the screen
-WINWIDTH = 800 # width of the program's window, in pixels
+WINWIDTH =1280 # width of the program's window, in pixels
 WINHEIGHT = 800 # height in pixels
 HALF_WINWIDTH = int(WINWIDTH / 2)
 HALF_WINHEIGHT = int(WINHEIGHT / 2)
@@ -32,6 +32,8 @@ pygame.mixer.pre_init(44100, -16, 2, 512)
 mixer.init() 
 diamond_fx = pygame.mixer.Sound('sounds/boulder_sounds_diamond.ogg')
 diamond_fx.set_volume(0.5)
+collectDiamond_fx = pygame.mixer.Sound('sounds/boulder_sounds_collectdiamond.ogg')
+collectDiamond_fx.set_volume(0.5)
 dirt_walk_fx = pygame.mixer.Sound('sounds/boulder_sounds_walk_dirt.ogg')
 dirt_walk_fx.set_volume(0.5)
 fallingRock_fx = pygame.mixer.Sound('sounds/boulder_sounds_falling-rock.ogg')
@@ -289,7 +291,7 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
             mapObj[playerx + xOffset][playery] ='s'
             diamondsCatched += 1
             print(diamondsCatched)
-            diamond_fx.play()
+            collectDiamond_fx.play()
             
             # Display the number of diamonds collected NOT WORKING
             font_score = pygame.font.SysFont('Bauhaus 93', 50)
@@ -313,47 +315,77 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
  
 def rockHasToFall(mapObj, gameStateObj):
     rocks = gameStateObj['rocks']
+    diamonds = gameStateObj['diamonds']
+    boulder = gameStateObj['player']
+    elementList = [rocks, diamonds]
+    rockOrDiamonds =['o','d'] 
     
-    for x, y in rocks :
-        
-        # The rock move to y+1 if this space is empty 
-        if mapObj[x][y+1] == 's' :
-            mapObj[x][y] = 's'
-            mapObj[x][y+1] = 'o'
-            # update the rocks position in the list of rocks
-            ind = rocks.index((x, y))
-            rocks[ind] = (x,y+1)
-            fallingRock_fx.play()
-            return True
-        
-        # The rock move to x-1 and y+1 if this space is empty and a rock is at x,y+1
-        if (mapObj[x-1][y+1] == 's') and (mapObj[x][y+1] == 'o') and (mapObj[x-1][y] == 's') :
-            mapObj[x][y] = 's'
-            mapObj[x-1][y+1] = 'o'
-            # update the rocks position in the list of rocks
-            ind = rocks.index((x, y))
-            rocks[ind] = (x-1,y+1)
-            fallingRock_fx.play()
-            return True
-        
-        # The rock move to x+1 and y+1 if this space is empty and rocks are at x,y+1 and x-1,y+1
-        if (mapObj[x+1][y+1] == 's') and (mapObj[x][y+1] == 'o') and (mapObj[x-1][y+1] == 'o') and (mapObj[x-1][y] == 's'):
-            mapObj[x][y] = 's'
-            mapObj[x+1][y+1] = 'o'
-            # update the rocks position in the list of rocks
-            ind = rocks.index((x, y))
-            rocks[ind] = (x+1,y+1)
-            return True
-        
-        # The rock move to x+1,y+1 if this space is empty a rocks is at x,y+1 and not a space at x-1,y
-        if (mapObj[x+1][y+1] == 's') and (mapObj[x][y+1] == 'o') and (mapObj[x-1][y] != 's') and (mapObj[x+1][y] == 's'):
-            mapObj[x][y] = 's'
-            mapObj[x+1][y+1] = 'o'
-            # update the rocks position in the list of rocks
-            ind = rocks.index((x, y))
-            rocks[ind] = (x+1,y+1)
-            return True        
-         
+    for element in elementList :
+        for x, y in element :
+            
+             # A rock or a diamond falls on the boulder
+            if (mapObj[x][y+1] == 's') and  (x == boulder[0] and y+2 == boulder[1]):
+                print('You are dead !')           
+                        
+            # The rock move to y+1 if this space is empty 
+            if mapObj[x][y+1] == 's' :
+                mapObj[x][y] = 's'
+                if element == rocks : # update the rocks position in the list of rocks
+                    mapObj[x][y+1] = 'o'
+                    fallingRock_fx.play()
+                elif element == diamonds : # update the diamond position in the list of diamonds
+                    mapObj[x][y+1] = 'd'
+                    diamond_fx.play()
+                
+                ind = element.index((x, y))
+                element[ind] = (x,y+1)
+                return True
+            
+            # The rock move to x-1 and y+1 if this space is empty and a rock or a diamond is at x,y+1
+            if (mapObj[x-1][y+1] == 's') and (mapObj[x][y+1] in rockOrDiamonds) and (mapObj[x-1][y] == 's') :
+                mapObj[x][y] = 's'
+                if element == rocks : # update the rocks position in the list of rocks
+                    mapObj[x-1][y+1] = 'o'
+                    fallingRock_fx.play()    
+                    
+                elif element == diamonds : # update the diamond position in the list of diamonds
+                    mapObj[x-1][y+1] = 'd'
+                    diamond_fx.play()    
+                         
+                ind = element.index((x, y))
+                element[ind] = (x-1,y+1)
+                return True
+            
+            # The rock move to x+1 and y+1 if this space is empty and rocks or diamonds are at x,y+1 and x-1,y+1
+            if (mapObj[x+1][y+1] == 's') and (mapObj[x][y+1] in rockOrDiamonds) and (mapObj[x-1][y+1] in rockOrDiamonds) and (mapObj[x-1][y] == 's'):
+                mapObj[x][y] = 's'
+                if element == rocks : # update the rocks position in the list of rocks
+                    mapObj[x+1][y+1] = 'o'
+                    fallingRock_fx.play() 
+                
+                elif element == diamonds : # update the diamond position in the list of diamonds
+                    mapObj[x+1][y+1] = 'd'
+                    diamond_fx.play() 
+                
+                ind = element.index((x, y))
+                element[ind] = (x+1,y+1)
+                return True
+            
+            # The rock move to x+1,y+1 if this space is empty a rock or diamond is at x,y+1 and not a space at x-1,y
+            if (mapObj[x+1][y+1] == 's') and (mapObj[x][y+1] in rockOrDiamonds) and (mapObj[x-1][y] != 's') and (mapObj[x+1][y] == 's'):
+                mapObj[x][y] = 's'
+                if element == rocks : # update the rocks position in the list of rocks
+                    mapObj[x+1][y+1] = 'o'
+                    fallingRock_fx.play() 
+                
+                elif element == diamonds : # update the diamond position in the list of diamonds
+                    mapObj[x+1][y+1] = 'd'
+                    diamond_fx.play()                    
+                    
+                ind = element.index((x, y))
+                element[ind] = (x+1,y+1)
+                return True  
+            
     return False
  
 
