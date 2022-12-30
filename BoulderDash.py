@@ -27,10 +27,24 @@ DOWN = 'down'
 LEFT = 'left'
 RIGHT = 'right'
 
+# Load sounds
+pygame.mixer.pre_init(44100, -16, 2, 512)
+mixer.init() 
+diamond_fx = pygame.mixer.Sound('sounds/boulder_sounds_diamond.ogg')
+diamond_fx.set_volume(0.5)
+dirt_walk_fx = pygame.mixer.Sound('sounds/boulder_sounds_walk_dirt.ogg')
+dirt_walk_fx.set_volume(0.5)
+fallingRock_fx = pygame.mixer.Sound('sounds/boulder_sounds_falling-rock.ogg')
+fallingRock_fx.set_volume(0.5)
 
 def terminate():
     pygame.quit()
     sys.exit()
+    
+    
+def draw_text(text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    DISPLAYSURF.blit(img, (x, y))
 
     
 def startScreen():
@@ -225,6 +239,7 @@ def RockisBlocked (mapObj, gameStateObj, x, y):
     return False
 
 def makeMove(mapObj, gameStateObj, playerMoveTo):
+    global diamondsCatched
     """Given a map and game state object, see if it is possible for the
     player to make the given move. If it is, then change the player's
     position. If not, do nothing.
@@ -264,6 +279,7 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
                 ind = rocks.index((playerx + xOffset, playery + yOffset))
                 rocks[ind] = (rocks[ind][0] + xOffset, rocks[ind][1] + yOffset)
                 mapObj[playerx+ (xOffset*2)][playery] ='o'
+                fallingRock_fx.play()
                                     
             else:
                 return False
@@ -271,8 +287,13 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
         # There is a diamon in the way    
         if (playerx + xOffset, playery + yOffset) in diamonds:
             mapObj[playerx + xOffset][playery] ='s'
-            #diamondsCatched += 1
-            #print(diamondsCatched)
+            diamondsCatched += 1
+            print(diamondsCatched)
+            diamond_fx.play()
+            
+            # Display the number of diamonds collected NOT WORKING
+            font_score = pygame.font.SysFont('Bauhaus 93', 50)
+            draw_text(str(diamondsCatched), font_score, WHITE, 60, 790)
             
             # Delete the diamond from the list of diamonds in the curent level.
             ind = diamonds.index((playerx + xOffset, playery + yOffset))
@@ -283,6 +304,7 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
          
         # Move the player upwards.
         gameStateObj['player'] = (playerx + xOffset, playery + yOffset)
+        dirt_walk_fx.play()
         
         # Clean the space at the previous player position
         mapObj[playerx][playery] ='s'
@@ -301,6 +323,7 @@ def rockHasToFall(mapObj, gameStateObj):
             # update the rocks position in the list of rocks
             ind = rocks.index((x, y))
             rocks[ind] = (x,y+1)
+            fallingRock_fx.play()
             return True
         
         # The rock move to x-1 and y+1 if this space is empty and a rock is at x,y+1
@@ -310,6 +333,7 @@ def rockHasToFall(mapObj, gameStateObj):
             # update the rocks position in the list of rocks
             ind = rocks.index((x, y))
             rocks[ind] = (x-1,y+1)
+            fallingRock_fx.play()
             return True
         
         # The rock move to x+1 and y+1 if this space is empty and rocks are at x,y+1 and x-1,y+1
@@ -402,9 +426,10 @@ def runLevel(levels, levelNum):
     
     
 def main():
-    global FPSCLOCK, DISPLAYSURF, IMAGESDICT, TILEMAPPING, BASICFONT, PLAYERIMAGES, currentImage
+    global FPSCLOCK, DISPLAYSURF, IMAGESDICT, TILEMAPPING, BASICFONT, PLAYERIMAGES, currentImage, diamondsCatched
 
      # Pygame initialization and basic set up of the global variables.
+   
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINWIDTH, WINHEIGHT))
@@ -412,7 +437,7 @@ def main():
 
     pygame.display.set_caption('Boulder Dash')
     BASICFONT = pygame.font.Font('freesansbold.ttf', 38)
-    
+       
     # Load Pygame Surface objects
     sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
     static_boulder = sprite_sheet_image.subsurface(0, 0, 32, 32)
