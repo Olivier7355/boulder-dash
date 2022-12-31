@@ -6,12 +6,14 @@
 import pygame, sys, os
 from pygame.locals import *
 from pygame import mixer
+import datetime
 
 FPS = 30 # frames per second to update the screen
 WINWIDTH =1280 # width of the program's window, in pixels
-WINHEIGHT = 800 # height in pixels
+WINHEIGHT = 760 # height in pixels
 HALF_WINWIDTH = int(WINWIDTH / 2)
 HALF_WINHEIGHT = int(WINHEIGHT / 2)
+COUNTER = 150
 
 # The total width and height of each tile in pixels.
 TILEWIDTH = 32
@@ -19,6 +21,7 @@ TILEHEIGHT = 32
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+YELLOW = (255, 255, 51)
 BGCOLOR = BLACK
 TEXTCOLOR = WHITE
 
@@ -27,7 +30,7 @@ DOWN = 'down'
 LEFT = 'left'
 RIGHT = 'right'
 
-# Load sounds
+# Load the sounds
 pygame.mixer.pre_init(44100, -16, 2, 512)
 mixer.init() 
 diamond_fx = pygame.mixer.Sound('sounds/boulder_sounds_diamond.ogg')
@@ -293,10 +296,6 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
             print(diamondsCatched)
             collectDiamond_fx.play()
             
-            # Display the number of diamonds collected NOT WORKING
-            font_score = pygame.font.SysFont('Bauhaus 93', 50)
-            draw_text(str(diamondsCatched), font_score, WHITE, 60, 790)
-            
             # Delete the diamond from the list of diamonds in the curent level.
             ind = diamonds.index((playerx + xOffset, playery + yOffset))
             del diamonds[ind]
@@ -388,7 +387,36 @@ def rockHasToFall(mapObj, gameStateObj):
             
     return False
  
-
+def updateScoreBoard():
+    global old_seconds, COUNTER
+    
+    font_score = pygame.font.SysFont('Bauhaus 93', 60)
+    
+    # Display the level number
+    draw_text('Level 01', font_score, WHITE, 10, 710)
+      
+    # Display the number of diamonds collected
+    sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
+    diamond = sprite_sheet_image.subsurface(0, 320, 32, 32)
+    rect = diamond.get_rect()
+    rect.x = 600
+    rect.y = 712
+    DISPLAYSURF.blit(diamond, rect)
+    
+    d_number = f"{diamondsCatched:02d}"
+    draw_text(str(d_number), font_score, YELLOW, 640, 710)
+    
+    # Display the countdown counter
+    current_time = datetime.datetime.now()
+    current_seconds = current_time.second
+    
+    if (old_seconds != current_seconds) :
+        old_seconds = current_seconds
+        COUNTER -= 1
+    draw_text(str(COUNTER), font_score, WHITE, 1200, 710)
+    
+        
+        
 def runLevel(levels, levelNum):
     global currentImage, diamondsCatched
     levelObj = levels[levelNum]
@@ -444,6 +472,8 @@ def runLevel(levels, levelNum):
                                 
         DISPLAYSURF.fill(BGCOLOR)
         
+        updateScoreBoard()
+          
         if mapNeedsRedraw:
             mapSurf = drawMap(mapObj, gameStateObj)
             mapNeedsRedraw = False
@@ -458,7 +488,7 @@ def runLevel(levels, levelNum):
     
     
 def main():
-    global FPSCLOCK, DISPLAYSURF, IMAGESDICT, TILEMAPPING, BASICFONT, PLAYERIMAGES, currentImage, diamondsCatched
+    global FPSCLOCK, DISPLAYSURF, IMAGESDICT, TILEMAPPING, BASICFONT, PLAYERIMAGES, currentImage, diamondsCatched, old_seconds
 
      # Pygame initialization and basic set up of the global variables.
    
@@ -466,6 +496,7 @@ def main():
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINWIDTH, WINHEIGHT))
     currentImage = 0
+    old_seconds = 70
 
     pygame.display.set_caption('Boulder Dash')
     BASICFONT = pygame.font.Font('freesansbold.ttf', 38)
