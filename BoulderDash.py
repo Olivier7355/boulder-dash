@@ -7,6 +7,7 @@ import pygame, sys, os
 from pygame.locals import *
 from pygame import mixer
 import datetime
+import time
 
 FPS = 30 # frames per second to update the screen
 WINWIDTH =1280 # width of the program's window, in pixels
@@ -41,6 +42,11 @@ dirt_walk_fx = pygame.mixer.Sound('sounds/boulder_sounds_walk_dirt.ogg')
 dirt_walk_fx.set_volume(0.5)
 fallingRock_fx = pygame.mixer.Sound('sounds/boulder_sounds_falling-rock.ogg')
 fallingRock_fx.set_volume(0.5)
+crack_fx = pygame.mixer.Sound('sounds/boulder_sounds_crack.ogg')
+crack_fx.set_volume(0.5)
+finish_fx = pygame.mixer.Sound('sounds/boulder_sounds_finished.ogg')
+finish_fx.set_volume(0.5)
+
 
 def terminate():
     pygame.quit()
@@ -166,11 +172,12 @@ def readLevelsFile(filename):
                         diamonds.append((x, y))
                     if mapObj[x][y] in ('e'):
                         # 'e' is the exit
-                        exitx = x
-                        exity = y
+                        doorx = x
+                        doory = y
 
             # Create level object and starting game state object.
             gameStateObj = {'player': (startx, starty),
+                            'door': (doorx, doory),
                             'stepCounter': 0,
                             'rocks': rocks,
                             'diamonds': diamonds}
@@ -300,6 +307,7 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
             ind = diamonds.index((playerx + xOffset, playery + yOffset))
             del diamonds[ind]
             if not diamonds :
+                crack_fx.play()
                 showExit = True 
             
          
@@ -311,19 +319,32 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
         mapObj[playerx][playery] ='s'
         return True
  
+def isLevelFinished(levelObj, gameStateObj):
+    
+    # Returns True if all the diamonds have been collected and Rockford has reach the exit.
+    diamonds = gameStateObj['diamonds']
+    Rockford = gameStateObj['player']
+    door = gameStateObj['door']
+    
+    if not diamonds and (Rockford[0] == door[0]) and (Rockford[1] == door[1]) :
+        print('Game completed !!!')
+        finish_fx.play() 
+        return True
+    
+    return False 
  
 def rockHasToFall(mapObj, gameStateObj):
     rocks = gameStateObj['rocks']
     diamonds = gameStateObj['diamonds']
-    boulder = gameStateObj['player']
+    Rockford = gameStateObj['player']
     elementList = [rocks, diamonds]
     rockOrDiamonds =['o','d'] 
     
     for element in elementList :
         for x, y in element :
             
-             # A rock or a diamond falls on the boulder
-            if (mapObj[x][y+1] == 's') and  (x == boulder[0] and y+2 == boulder[1]):
+             # A rock or a diamond falls on Rockford
+            if (mapObj[x][y+1] == 's') and  (x == Rockford[0] and y+2 == Rockford[1]):
                 print('You are dead !')           
                         
             # The rock move to y+1 if this space is empty 
@@ -387,24 +408,34 @@ def rockHasToFall(mapObj, gameStateObj):
             
     return False
  
-def updateScoreBoard():
-    global old_seconds, COUNTER
-    
+def updateScoreBoard(gameStateObj):
+    global old_seconds, COUNTER, currentLevelIndex, lives
+
+    diamonds = gameStateObj['diamonds']
     font_score = pygame.font.SysFont('Bauhaus 93', 60)
+    sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
     
     # Display the level number
-    draw_text('Level 01', font_score, WHITE, 10, 710)
+    draw_text(f'Level {currentLevelIndex+1}', font_score, WHITE, 10, 710)
       
     # Display the number of diamonds collected
-    sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
     diamond = sprite_sheet_image.subsurface(0, 320, 32, 32)
     rect = diamond.get_rect()
     rect.x = 600
     rect.y = 712
     DISPLAYSURF.blit(diamond, rect)
     
-    d_number = f"{diamondsCatched:02d}"
+    d_number = f"{len(diamonds):02d}"
     draw_text(str(d_number), font_score, YELLOW, 640, 710)
+    
+    # Display the number of Rockford lives
+    static_Rockford = sprite_sheet_image.subsurface(0, 0, 32, 32)
+    rect = static_Rockford.get_rect()
+    rect.x = 820
+    rect.y = 710
+    DISPLAYSURF.blit(static_Rockford, rect)
+    
+    draw_text(str(lives), font_score, WHITE, 860, 710)
     
     # Display the countdown counter
     current_time = datetime.datetime.now()
@@ -415,10 +446,14 @@ def updateScoreBoard():
         COUNTER -= 1
     draw_text(str(COUNTER), font_score, WHITE, 1200, 710)
     
+    if COUNTER == 0 :
+        lives -=1
+    
         
         
 def runLevel(levels, levelNum):
-    global currentImage, diamondsCatched
+    global currentImage, diamondsCatched, COUNTER
+    COUNTER = 150
     levelObj = levels[levelNum]
     mapObj = levelObj['mapObj']
     gameStateObj = levelObj['startState']
@@ -437,7 +472,7 @@ def runLevel(levels, levelNum):
             if event.type == QUIT:
                 # Player clicked the "X" at the corner of the window.
                 terminate()
-                
+                  
             elif event.type == KEYDOWN:
                 # Handle key presses
                 keyPressed = True
@@ -459,6 +494,11 @@ def runLevel(levels, levelNum):
                 # increment the step counter.
                 gameStateObj['stepCounter'] += 1
                 mapNeedsRedraw = True
+                
+            if isLevelFinished(levelObj, gameStateObj):
+                # level is solved, we should show the "Solved!" image.
+                levelIsComplete = True
+                keyPressed = False
         
         # Create a cool down period for the animations of the falling rocks        
         current_time = pygame.time.get_ticks()
@@ -472,7 +512,7 @@ def runLevel(levels, levelNum):
                                 
         DISPLAYSURF.fill(BGCOLOR)
         
-        updateScoreBoard()
+        updateScoreBoard(gameStateObj)
           
         if mapNeedsRedraw:
             mapSurf = drawMap(mapObj, gameStateObj)
@@ -482,6 +522,15 @@ def runLevel(levels, levelNum):
         mapSurfRect = mapSurf.get_rect()
         # Draw mapSurf to the DISPLAYSURF Surface object.
         DISPLAYSURF.blit(mapSurf, mapSurfRect)
+        
+        
+        if levelIsComplete:
+            # is solved, show the "Solved!" image until the player
+            # has pressed a key.
+            time.sleep(4)
+
+            return 'solved'
+        
                 
         pygame.display.update() # draw DISPLAYSURF to the screen.
         FPSCLOCK.tick()
@@ -489,6 +538,7 @@ def runLevel(levels, levelNum):
     
 def main():
     global FPSCLOCK, DISPLAYSURF, IMAGESDICT, TILEMAPPING, BASICFONT, PLAYERIMAGES, currentImage, diamondsCatched, old_seconds
+    global currentLevelIndex, lives
 
      # Pygame initialization and basic set up of the global variables.
    
@@ -497,13 +547,14 @@ def main():
     DISPLAYSURF = pygame.display.set_mode((WINWIDTH, WINHEIGHT))
     currentImage = 0
     old_seconds = 70
+    lives = 5
 
     pygame.display.set_caption('Boulder Dash')
     BASICFONT = pygame.font.Font('freesansbold.ttf', 38)
        
     # Load Pygame Surface objects
     sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
-    static_boulder = sprite_sheet_image.subsurface(0, 0, 32, 32)
+    static_Rockford = sprite_sheet_image.subsurface(0, 0, 32, 32)
     wall = sprite_sheet_image.subsurface(32, 192, 32, 32)
     brick = sprite_sheet_image.subsurface(96, 192, 32, 32)
     rock = sprite_sheet_image.subsurface(0, 224, 32, 32)
@@ -515,7 +566,7 @@ def main():
     
     # A global dict value that will contain all the Pygame
     # Surface objects returned by pygame.image.load().
-    IMAGESDICT = {'boulder': static_boulder,
+    IMAGESDICT = {'Rockford': static_Rockford,
                   'wall': wall,
                   'brick': brick,
                   'rock': rock,
@@ -535,7 +586,7 @@ def main():
                    'e': IMAGESDICT['exit'],
                    'o': IMAGESDICT['rock']}
     
-    PLAYERIMAGES = [IMAGESDICT['boulder']]
+    PLAYERIMAGES = [IMAGESDICT['Rockford']]
     
     #startScreen() # show the title screen until the user presses a key
     
@@ -556,6 +607,8 @@ def main():
             if currentLevelIndex >= len(levels):
                 # If there are no more levels, go back to the first one.
                 currentLevelIndex = 0
+                levels = readLevelsFile('BoulderLevels.txt')
+                print('restart first level')
         elif result == 'back':
             # Go to the previous level.
             currentLevelIndex -= 1
