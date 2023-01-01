@@ -46,6 +46,8 @@ crack_fx = pygame.mixer.Sound('sounds/boulder_sounds_crack.ogg')
 crack_fx.set_volume(0.5)
 finish_fx = pygame.mixer.Sound('sounds/boulder_sounds_finished.ogg')
 finish_fx.set_volume(0.5)
+explosion_fx = pygame.mixer.Sound('sounds/boulder_sounds_explosion.ogg')
+explosion_fx.set_volume(0.5)
 
 
 def terminate():
@@ -334,6 +336,7 @@ def isLevelFinished(levelObj, gameStateObj):
     return False 
  
 def rockHasToFall(mapObj, gameStateObj):
+    global deadRockford
     rocks = gameStateObj['rocks']
     diamonds = gameStateObj['diamonds']
     Rockford = gameStateObj['player']
@@ -343,9 +346,21 @@ def rockHasToFall(mapObj, gameStateObj):
     for element in elementList :
         for x, y in element :
             
-             # A rock or a diamond falls on Rockford
+            # A rock or a diamond falls on Rockford
             if (mapObj[x][y+1] == 's') and  (x == Rockford[0] and y+2 == Rockford[1]):
-                print('You are dead !')           
+                print('You are dead !')
+                
+                # Display the explosion
+                mapObj[x][y] = 's'
+                for j in range(1,4) :
+                    mapObj[x][y+j] = 'b'
+                    mapObj[x-1][y+j] = 'b'
+                    mapObj[x+1][y+j] = 'b'
+            
+                explosion_fx.play()
+                deadRockford = True
+                return True
+                                      
                         
             # The rock move to y+1 if this space is empty 
             if mapObj[x][y+1] == 's' :
@@ -446,13 +461,12 @@ def updateScoreBoard(gameStateObj):
         COUNTER -= 1
     draw_text(str(COUNTER), font_score, WHITE, 1200, 710)
     
-    if COUNTER == 0 :
-        lives -=1
+
     
         
         
 def runLevel(levels, levelNum):
-    global currentImage, diamondsCatched, COUNTER
+    global currentImage, diamondsCatched, COUNTER, lives, deadRockford
     COUNTER = 150
     levelObj = levels[levelNum]
     mapObj = levelObj['mapObj']
@@ -462,6 +476,7 @@ def runLevel(levels, levelNum):
     last_update = pygame.time.get_ticks()
     animation_cooldown = 40
     diamondsCatched = 0
+    deadRockford = False
     
     while True: # main game loop
         # Reset these variables:
@@ -528,11 +543,23 @@ def runLevel(levels, levelNum):
             # is solved, show the "Solved!" image until the player
             # has pressed a key.
             time.sleep(4)
-
             return 'solved'
         
-                
+        # Restart the level and substract a Rockford live if the counter reaches 0
+        if (COUNTER == 0) :
+            lives -=1
+            finish_fx.play()
+            time.sleep(4) 
+            return 'counter0'
+                       
         pygame.display.update() # draw DISPLAYSURF to the screen.
+        
+        # Restart the level if Rockford has been crushed
+        if deadRockford :
+            lives -=1
+            time.sleep(4) 
+            return 'deadRockford'
+        
         FPSCLOCK.tick()
     
     
@@ -562,6 +589,7 @@ def main():
     space = sprite_sheet_image.subsurface(0, 192, 32, 32)
     diamond = sprite_sheet_image.subsurface(0, 320, 32, 32)
     exit = sprite_sheet_image.subsurface(64, 192, 32, 32)
+    explosion = sprite_sheet_image.subsurface(96, 0, 32, 32)
     intro_title = pygame.image.load('star_title.png')
     
     # A global dict value that will contain all the Pygame
@@ -574,6 +602,7 @@ def main():
                   'space': space,
                   'diamond': diamond,
                   'exit': exit,
+                  'explosion': explosion,
                   'title': intro_title}
     
     # These dict values are global, and map the character that appears
@@ -584,6 +613,7 @@ def main():
                    's': IMAGESDICT['space'],
                    'd': IMAGESDICT['diamond'],
                    'e': IMAGESDICT['exit'],
+                   'b': IMAGESDICT['explosion'],
                    'o': IMAGESDICT['rock']}
     
     PLAYERIMAGES = [IMAGESDICT['Rockford']]
@@ -609,6 +639,9 @@ def main():
                 currentLevelIndex = 0
                 levels = readLevelsFile('BoulderLevels.txt')
                 print('restart first level')
+        elif result in ('counter0', 'deadRockford'):
+            levels = readLevelsFile('BoulderLevels.txt')
+            
         elif result == 'back':
             # Go to the previous level.
             currentLevelIndex -= 1
