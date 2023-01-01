@@ -1,1 +1,1 @@
-# Boulder Dash (TM) (Pygame)
+# Boulder Dash (TM) (PyGame)
