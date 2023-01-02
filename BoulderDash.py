@@ -31,6 +31,35 @@ DOWN = 'down'
 LEFT = 'left'
 RIGHT = 'right'
 
+
+class TheDiamonds(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.diamond_frames = []
+        self.index = 0
+        self.counter = 0
+        #load images
+        sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
+        for i in range(0, sprite_sheet_image.get_width(), 32):
+            self.diamond_frames.append(sprite_sheet_image.subsurface(pygame.Rect(i, 320, 32, 32)))
+        
+        self.image = self.diamond_frames[self.index]
+        self.rect = self.image.get_rect()
+        self.rect.center = [x+16, y+16]
+            
+    def update(self):
+        
+        #handle the animation
+        self.counter += 1
+        flap_cooldown = 2
+        if self.counter > flap_cooldown:
+            self.counter = 0
+            self.index += 1
+            if self.index >= len(self.diamond_frames):
+                self.index = 0
+        self.image = self.diamond_frames[self.index]
+
+
 # Load the sounds
 pygame.mixer.pre_init(44100, -16, 2, 512)
 mixer.init() 
@@ -206,14 +235,21 @@ def drawMap(mapObj, gameStateObj):
     mapSurf = pygame.Surface((mapSurfWidth, mapSurfHeight))
     mapSurf.fill(BGCOLOR) # start with a blank color on the surface.
     
+    
     # Draw the tile sprites onto this surface.
     for x in range(len(mapObj)):
         for y in range(len(mapObj[x])):
             spaceRect = pygame.Rect((x * TILEWIDTH, y * TILEHEIGHT, TILEWIDTH, TILEHEIGHT))
             #print(mapObj[x][y], end=' ')
-            if mapObj[x][y] in TILEMAPPING:
+            if (mapObj[x][y] in TILEMAPPING) and (mapObj[x][y] != 'd'):
                 baseTile = TILEMAPPING[mapObj[x][y]]
-
+                
+            if mapObj[x][y] == 'd' :
+                diamonds = TheDiamonds(x*32,y*32) # Create an instance of the animated diamonds
+                diamonds_group.add(diamonds) # Add the diamond to the sprite group
+                #baseTile = TILEMAPPING[mapObj[x][y]]
+                
+                
             # First draw the base ground/wall tile.
             mapSurf.blit(baseTile, spaceRect)
 
@@ -466,7 +502,7 @@ def updateScoreBoard(gameStateObj):
         
         
 def runLevel(levels, levelNum):
-    global currentImage, diamondsCatched, COUNTER, lives, deadRockford
+    global currentImage, diamondsCatched, COUNTER, lives, deadRockford, diamonds_group
     COUNTER = 150
     levelObj = levels[levelNum]
     mapObj = levelObj['mapObj']
@@ -477,11 +513,13 @@ def runLevel(levels, levelNum):
     animation_cooldown = 40
     diamondsCatched = 0
     deadRockford = False
+    diamonds_group = pygame.sprite.Group()
     
     while True: # main game loop
         # Reset these variables:
         playerMoveTo = None
         keyPressed = False
+        
         
         for event in pygame.event.get(): # event handling loop
             if event.type == QUIT:
@@ -552,6 +590,8 @@ def runLevel(levels, levelNum):
             time.sleep(4) 
             return 'counter0'
                        
+        diamonds_group.update()
+        diamonds_group.draw(DISPLAYSURF)
         pygame.display.update() # draw DISPLAYSURF to the screen.
         
         # Restart the level if Rockford has been crushed
@@ -561,6 +601,8 @@ def runLevel(levels, levelNum):
             return 'deadRockford'
         
         FPSCLOCK.tick()
+
+        
     
     
 def main():
