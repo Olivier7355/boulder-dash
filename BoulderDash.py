@@ -344,6 +344,7 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
             # Delete the diamond from the list of diamonds in the curent level.
             ind = diamonds.index((playerx + xOffset, playery + yOffset))
             del diamonds[ind]
+            diamonds_group.remove(TheDiamonds((playerx + xOffset)*32,(playery + yOffset)*32))  # not working
             if not diamonds :
                 crack_fx.play()
                 showExit = True 
@@ -405,7 +406,7 @@ def rockHasToFall(mapObj, gameStateObj):
                     mapObj[x][y+1] = 'o'
                     fallingRock_fx.play()
                 elif element == diamonds : # update the diamond position in the list of diamonds
-                    mapObj[x][y+1] = 'd'
+                    mapObj[x][y+1] = 'd' 
                     diamond_fx.play()
                 
                 ind = element.index((x, y))
@@ -510,7 +511,7 @@ def runLevel(levels, levelNum):
     mapNeedsRedraw = True # set to True to call drawMap()
     levelIsComplete = False
     last_update = pygame.time.get_ticks()
-    animation_cooldown = 40
+    animation_cooldown = 50
     diamondsCatched = 0
     deadRockford = False
     diamonds_group = pygame.sprite.Group()
