@@ -229,6 +229,7 @@ def readLevelsFile(filename):
 
 
 def drawMap(mapObj, gameStateObj):
+    global diamonds_group, diamondsIns
     # Draws the map to a Surface object, including the player. This function does not call pygame.display.update().
     mapSurfWidth = len(mapObj) * TILEWIDTH
     mapSurfHeight = (len(mapObj[0])) * TILEHEIGHT
@@ -245,8 +246,8 @@ def drawMap(mapObj, gameStateObj):
                 baseTile = TILEMAPPING[mapObj[x][y]]
                 
             if mapObj[x][y] == 'd' :
-                diamonds = TheDiamonds(x*32,y*32) # Create an instance of the animated diamonds
-                diamonds_group.add(diamonds) # Add the diamond to the sprite group
+                diamondsIns = TheDiamonds(x*32,y*32) # Create an instance of the animated diamonds
+                diamonds_group.add(diamondsIns) # Add the diamond to the sprite group
                 #baseTile = TILEMAPPING[mapObj[x][y]]
                 
                 
@@ -289,7 +290,7 @@ def RockisBlocked (mapObj, gameStateObj, x, y):
     return False
 
 def makeMove(mapObj, gameStateObj, playerMoveTo):
-    global diamondsCatched
+    global diamondsCatched, diamonds_group, diamondsIns
     """Given a map and game state object, see if it is possible for the
     player to make the given move. If it is, then change the player's
     position. If not, do nothing.
@@ -334,7 +335,7 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
             else:
                 return False
             
-        # There is a diamon in the way    
+        # There is a diamond in the way    
         if (playerx + xOffset, playery + yOffset) in diamonds:
             mapObj[playerx + xOffset][playery] ='s'
             diamondsCatched += 1
@@ -344,7 +345,9 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
             # Delete the diamond from the list of diamonds in the curent level.
             ind = diamonds.index((playerx + xOffset, playery + yOffset))
             del diamonds[ind]
-            diamonds_group.remove(TheDiamonds((playerx + xOffset)*32,(playery + yOffset)*32))  # not working
+            diamonds_group.remove(TheDiamonds(640,64))  # not working
+            #diamonds_group.empty()
+            
             if not diamonds :
                 crack_fx.play()
                 showExit = True 
@@ -515,6 +518,7 @@ def runLevel(levels, levelNum):
     diamondsCatched = 0
     deadRockford = False
     diamonds_group = pygame.sprite.Group()
+    
     
     while True: # main game loop
         # Reset these variables:
