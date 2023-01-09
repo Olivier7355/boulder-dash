@@ -32,34 +32,6 @@ LEFT = 'left'
 RIGHT = 'right'
 
 
-class TheDiamonds(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
-        self.diamond_frames = []
-        self.index = 0
-        self.counter = 0
-        #load images
-        sprite_sheet_image = pygame.image.load('images/sprites_sheet.png')
-        for i in range(0, sprite_sheet_image.get_width(), 32):
-            self.diamond_frames.append(sprite_sheet_image.subsurface(pygame.Rect(i, 320, 32, 32)))
-        
-        self.image = self.diamond_frames[self.index]
-        self.rect = self.image.get_rect()
-        self.rect.center = [x+16, y+16]
-            
-    def update(self):
-        
-        #handle the animation
-        self.counter += 1
-        flap_cooldown = 2
-        if self.counter > flap_cooldown:
-            self.counter = 0
-            self.index += 1
-            if self.index >= len(self.diamond_frames):
-                self.index = 0
-        self.image = self.diamond_frames[self.index]
-
-
 # Load the sounds
 pygame.mixer.pre_init(44100, -16, 2, 512)
 mixer.init() 
@@ -246,9 +218,9 @@ def drawMap(mapObj, gameStateObj):
                 baseTile = TILEMAPPING[mapObj[x][y]]
                 
             if mapObj[x][y] == 'd' :
-                diamondsIns = TheDiamonds(x*32,y*32) # Create an instance of the animated diamonds
-                diamonds_group.add(diamondsIns) # Add the diamond to the sprite group
-                #baseTile = TILEMAPPING[mapObj[x][y]]
+                #diamondsIns = TheDiamonds(x*32,y*32) # Create an instance of the animated diamonds
+                #diamonds_group.add(diamondsIns) # Add the diamond to the sprite group
+                baseTile = TILEMAPPING[mapObj[x][y]]
                 
                 
             # First draw the base ground/wall tile.
@@ -345,8 +317,6 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
             # Delete the diamond from the list of diamonds in the curent level.
             ind = diamonds.index((playerx + xOffset, playery + yOffset))
             del diamonds[ind]
-            diamonds_group.remove(TheDiamonds(640,64))  # not working
-            #diamonds_group.empty()
             
             if not diamonds :
                 crack_fx.play()
@@ -387,7 +357,7 @@ def rockHasToFall(mapObj, gameStateObj):
         for x, y in element :
             
             # A rock or a diamond falls on Rockford
-            if (mapObj[x][y+1] == 's') and  (x == Rockford[0] and y+2 == Rockford[1]):
+            if ((mapObj[x][y+1] == 's') and  (x == Rockford[0] and y+2 == Rockford[1])):
                 print('You are dead !')
                 
                 # Display the explosion
@@ -396,6 +366,19 @@ def rockHasToFall(mapObj, gameStateObj):
                     mapObj[x][y+j] = 'b'
                     mapObj[x-1][y+j] = 'b'
                     mapObj[x+1][y+j] = 'b'
+            
+                explosion_fx.play()
+                deadRockford = True
+                return True
+            elif ((mapObj[x][y+1] == 'o') and (mapObj[x-1][y] == 's') and (mapObj[x-1][y+1] == 's') and (x-1 == Rockford[0] and y+2 == Rockford[1])):
+                print('You are dead !')
+                
+                # Display the explosion
+                mapObj[x][y] = 's'
+                for j in range(1,4) :
+                    mapObj[x-1][y+j] = 'b'
+                    mapObj[x-2][y+j] = 'b'
+                    mapObj[x][y+j] = 'b'
             
                 explosion_fx.play()
                 deadRockford = True
@@ -417,7 +400,7 @@ def rockHasToFall(mapObj, gameStateObj):
                 return True
             
             # The rock move to x-1 and y+1 if this space is empty and a rock or a diamond is at x,y+1
-            if (mapObj[x-1][y+1] == 's') and (mapObj[x][y+1] in rockOrDiamonds) and (mapObj[x-1][y] == 's') :
+            if (mapObj[x-1][y+1] == 's') and (mapObj[x][y+1] in rockOrDiamonds) and (mapObj[x-1][y] == 's') and (x-1 != Rockford[0] and y+1 != Rockford[1]):
                 mapObj[x][y] = 's'
                 if element == rocks : # update the rocks position in the list of rocks
                     mapObj[x-1][y+1] = 'o'
@@ -432,7 +415,7 @@ def rockHasToFall(mapObj, gameStateObj):
                 return True
             
             # The rock move to x+1 and y+1 if this space is empty and rocks or diamonds are at x,y+1 and x-1,y+1
-            if (mapObj[x+1][y+1] == 's') and (mapObj[x][y+1] in rockOrDiamonds) and (mapObj[x-1][y+1] in rockOrDiamonds) and (mapObj[x-1][y] == 's'):
+            if (mapObj[x+1][y+1] == 's') and (mapObj[x][y+1] in rockOrDiamonds) and (mapObj[x-1][y+1] in rockOrDiamonds) and (mapObj[x-1][y] == 's') and (x-1 != Rockford[0] and y+1 != Rockford[1]):
                 mapObj[x][y] = 's'
                 if element == rocks : # update the rocks position in the list of rocks
                     mapObj[x+1][y+1] = 'o'
@@ -595,8 +578,6 @@ def runLevel(levels, levelNum):
             time.sleep(4) 
             return 'counter0'
                        
-        diamonds_group.update()
-        diamonds_group.draw(DISPLAYSURF)
         pygame.display.update() # draw DISPLAYSURF to the screen.
         
         # Restart the level if Rockford has been crushed
@@ -670,7 +651,7 @@ def main():
     # Read in the levels from the text file. See the readLevelsFile() for
     # details on the format of this file and how to make your own levels.
     levels = readLevelsFile('BoulderLevels.txt')
-    currentLevelIndex = 0
+    currentLevelIndex = 1
         
     # The main game loop. This loop runs a single level, when the user
     # finishes that level, the next/previous level is loaded.
