@@ -1,5 +1,6 @@
 ; Boulder Dash clone
 ; By Olivier Charles olivier7355@gmail.com
+; Author of the caves : Peter Liepa
 ;
 ; Everything after the ; is a comment and will be ignored by the game that
 ; reads in this file.
@@ -55,4 +56,29 @@
 #xxxxxox=oxxdxxx=xxxsoxx=xxoxxxx=xxxoos#
 #xdxxxso=xxoxxxx=x@dsoxx=xsxxxxx=xxxoos#
 #xoxxxxs=xxsxxox=xexsxxx=xxxxoxo=xxxxsx#
+########################################
+
+; 3
+
+########################################
+#ox==x=oox=xxxo=oxxoxxxx=xxxoxxxxxo=xdx#
+#xx@=xdxox=xxx===xx=xoxxxxoxxoxoxxx=x=o#
+#xxxx=xxodxxoxxxx=xxxxxox==oxxxxxxx=x==#
+#dx=xx=o=oxxoxxxx=xxxoxxxxxxoxooxxxxxx=#
+#ox=xxx=xxox==xxox==dxxxxxxxoxooxxxxxx=#
+#ooxxoxxxx=xxxoxxxxxxoxooxxxxxxoxxd==xx#
+#xxox==xxoxooxxx=xxxxoxooxxxxxx=xxox=xo#
+#xx=xxxdxxxxxxdxoxx==oxxox=x=oxx=oxxdxo#
+#oxoxxxx=x==xxdxoxx==oxxoxxdx=xxx=xxox=#
+#xox==xxxxxoo=xxxdx=x=oxx=oxxx=oxxdxoxx#
+#=x==xxxxxxoo=oxxox=x==xxx=xxox==xxox==#
+#x=xoxox=xxx==oxxoxxxx=xxxoxxxxx==xox==#
+#x=xoxox=xdx=x=oxx=oxxxxoxxoxooxxxx=xxx#
+#=xx=o=oxxoxxxx=xxxdxxx=xoxxxxxxx=x==xd#
+#=xxx==oxx=xdxxx=oxxoxoxxxox=oxxxxxx=xx#
+#=xdxxxxox==xxox==oxxxxxxxox=oxxxxxx=xx#
+#xxoxxxx=xxxoxxxxxxoxooxxxxxx=xxox=xxx=#
+#ox==xxox==xxx=xxxxoxooxxxxxx=xxodxxoxx#
+#=xxxoxxxxxxoxodxxxxxxoxxx==xx=oxxdx=xx#
+#ooxxx=xxxxxoxodxxxxxx=xxox=dxdxo=xoxxx#
 ########################################
