@@ -17,7 +17,7 @@ Inspired by the [Boulder Caves version from Irmen de Jong](https://github.com/ir
 
 - Stay alive and avoid the aliens !
 
-# Cheat Keys
+# Cheat keys
 
 # Screenshot
 
