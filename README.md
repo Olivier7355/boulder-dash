@@ -11,13 +11,22 @@ Inspired by the [Boulder Caves version from Irmen de Jong](https://github.com/ir
 - Python 3.9 or newer
 - Pygame 2.1.2 or newer
 
-# Objective and rules of the game
+# Objective And Rules Of The Game
 
 - Collect all the diamonds to open the exit to go to the next level.
 
 - Stay alive and avoid the aliens !
 
-# Cheat keys
+# Cheat Keys
+
+# Room For Improvement
+This is just a programming experiment of the Boulderdash game mechanics. Therefore it does not include all the features from the orginale Boulder Dash version (1984) from Peter Liepa.
+
+If you were to polish this game further you would want to add things like:
+
+-
+-
+-
 
 # Screenshot
 
