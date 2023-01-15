@@ -1,6 +1,23 @@
 # Boulder Dash (PyGame)
 
-In development...
+# In development...
+
+A Boulder Dash clone written in python with PyGame.
+
+Inspired by the [Boulder Caves version from Irmen de Jong](https://github.com/irmen/bouldercaves) written with the tkinter library
+
+# Requirements
+
+- Python 3.9 or newer
+- Pygame 2.1.2 or newer
+
+# Objective and rules of the game
+
+- Collect all the diamonds to open the exit to go to the next level.
+
+- Stay alive and avoid the aliens !
+
+# Screenshot
 
 ![Screenshot from 2023-01-09 21-47-33](https://user-images.githubusercontent.com/108932082/211405200-558ed942-9f72-4ea1-810a-99ae9924348d.png)
 
@@ -13,3 +30,5 @@ In development...
 ![Screenshot from 2023-01-14 20-54-57](https://user-images.githubusercontent.com/108932082/212494066-9ae206e3-f8d3-4b78-84ab-3c910f8f46df.png)
 
 ![Screenshot from 2023-01-14 21-02-34](https://user-images.githubusercontent.com/108932082/212494117-886fc54c-def9-44ac-a325-e5853ecc0de1.png)
+
+# How to install and run the game
