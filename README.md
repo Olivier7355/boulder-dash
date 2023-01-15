@@ -1,4 +1,4 @@
-# Boulder Dash (TM) (PyGame)
+# Boulder Dash (PyGame)
 
 In development...
 
