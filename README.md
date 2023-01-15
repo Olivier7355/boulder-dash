@@ -2,7 +2,7 @@
 
 # In development...
 
-A Boulder Dash clone written in python with PyGame.
+A Boulder Dash clone written in Python with PyGame.
 
 Inspired by the [Boulder Caves version from Irmen de Jong](https://github.com/irmen/bouldercaves) written with the tkinter library
 
@@ -20,7 +20,7 @@ Inspired by the [Boulder Caves version from Irmen de Jong](https://github.com/ir
 # Cheat Keys
 
 # Room For Improvement
-This is just a programming experiment of the Boulderdash game mechanics. Therefore it does not include all the features from the orginale Boulder Dash version (1984) from Peter Liepa.
+This is just a programming experiment of the Boulderdash game mechanics. Therefore it does not include all the features from the [orginale Boulder Dash version (1984)](https://en.wikipedia.org/wiki/Boulder_Dash) from Peter Liepa.
 
 If you were to polish this game further you would want to add things like:
 
