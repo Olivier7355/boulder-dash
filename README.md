@@ -4,8 +4,6 @@
 
 A Boulder Dash clone written in Python with PyGame.
 
-Inspired by the [Boulder Caves version from Irmen de Jong](https://github.com/irmen/bouldercaves) written with the tkinter library
-
 # Requirements
 
 - Python 3.9 or newer
