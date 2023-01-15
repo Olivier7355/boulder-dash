@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 # Boulder Dash clone
 # This module is in development
 # By Olivier Charles olivier7355@gmail.com
@@ -550,6 +552,9 @@ def runLevel(levels, levelNum):
             spaceBelowRock = rockHasToFall(mapObj, gameStateObj)   
             if spaceBelowRock:
                 mapNeedsRedraw = True
+                
+        # Manage the aliens' moves
+        
                                 
         DISPLAYSURF.fill(BGCOLOR)
         
@@ -616,6 +621,7 @@ def main():
     dirt = sprite_sheet_image.subsurface(32, 224, 32, 32)
     space = sprite_sheet_image.subsurface(0, 192, 32, 32)
     diamond = sprite_sheet_image.subsurface(0, 320, 32, 32)
+    alien = sprite_sheet_image.subsurface(224, 288, 32, 32)
     exit = sprite_sheet_image.subsurface(64, 192, 32, 32)
     explosion = sprite_sheet_image.subsurface(96, 0, 32, 32)
     intro_title = pygame.image.load('star_title.png')
@@ -631,6 +637,7 @@ def main():
                   'diamond': diamond,
                   'exit': exit,
                   'explosion': explosion,
+                  'alien' : alien,
                   'title': intro_title}
     
     # These dict values are global, and map the character that appears
@@ -642,6 +649,7 @@ def main():
                    'd': IMAGESDICT['diamond'],
                    'e': IMAGESDICT['exit'],
                    'b': IMAGESDICT['explosion'],
+                   'a': IMAGESDICT['alien'],
                    'o': IMAGESDICT['rock']}
     
     PLAYERIMAGES = [IMAGESDICT['Rockford']]

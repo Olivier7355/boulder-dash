@@ -37,7 +37,7 @@
 
 ########################################
 #xoxxoxx=xoxxxdx=xxxsxox=oxxxxxx=xxooxx#
-#xxxxxxx=xxxxxxo=ooxsxxx=sxxdxxx=xxxxox#
+#xxxxxxx=xxxxxxo=xoxsxxx=sxxdxxx=xxxxox#
 #ssssssssssssssssssssssssssssssssssssss#
 #dxxxxxx=xoxxxxo=xoxsxxs=xxoxxdx=xxoxox#
 #xxxxxxx=xoxxxxo=xoxsoxx=xxxxxox=xxxsxx#
@@ -49,7 +49,7 @@
 #oxxxxox=xxoxxox=xxxsxso=xxxxxxx=oxxxox#
 #xoxxxxx=xxxoxxx=xxxsxso=xxxxxxx=soxxox#
 #===================s==================#
-#oxsssxx=xxxxoxo=xxxsxxx=xodxxox=xxxxxx#
+#oxssaxx=xxxxoxo=xxxsxxx=xodxxox=xxxxxx#
 #xxxxxox=oxxxxxx=xxdsxxx=sxxoxxx=xoxoox#
 #ssssssssssssssssssssssssssssssssssssss#
 #dxxsxox=oxxxxox=xoxsxxo=xoxoxxx=xxxxxx#
