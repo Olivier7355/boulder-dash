@@ -4,7 +4,7 @@
 
 A Boulder Dash clone written in Python with PyGame.
 
-*The Sounds effects are from [irmen/bouldercaves](https://github.com/irmen/bouldercaves) repository.*
+*The sounds effects are from [irmen/bouldercaves](https://github.com/irmen/bouldercaves) repository.*
 
 # Requirements
 
