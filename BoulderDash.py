@@ -163,6 +163,7 @@ def readLevelsFile(filename):
             exity = None
             rocks = [] # list of (x, y) tuples for each rock.
             diamonds = [] # list of (x, y) for each diamond.
+            enemies = [] # list of (x, y) for each enemie.
             for x in range(maxWidth):
                 for y in range(len(mapObj[x])):
                     if mapObj[x][y] in ('@'):
@@ -175,6 +176,10 @@ def readLevelsFile(filename):
                     if mapObj[x][y] in ('d'):
                         # 'd' is diamond
                         diamonds.append((x, y))
+                    if mapObj[x][y] in ('a'):
+                        # 'a' is enemie
+                        enemies.append((x, y))    
+                        
                     if mapObj[x][y] in ('e'):
                         # 'e' is the exit
                         doorx = x
@@ -185,7 +190,8 @@ def readLevelsFile(filename):
                             'door': (doorx, doory),
                             'stepCounter': 0,
                             'rocks': rocks,
-                            'diamonds': diamonds}
+                            'diamonds': diamonds,
+                            'enemies' : enemies}
             levelObj = {'width': maxWidth,
                         'height': len(mapObj),
                         'mapObj': mapObj,
@@ -345,7 +351,27 @@ def isLevelFinished(levelObj, gameStateObj):
         finish_fx.play() 
         return True
     
-    return False 
+    return False
+
+def moveEnemies(mapObj, gameStateObj) :
+    Rockford = gameStateObj['player']
+    enemies = gameStateObj['enemies']
+    
+    # The algo for the move of an enemie
+    for x,y in enemies :
+        
+        # Generate a list of the possible moves
+        # The enemie cannot go back to the previous position unless there is no other option 
+        north = mapObj[x][y-1] == 's'
+        south = mapObj[x][y+1] == 's'
+        east = mapObj[x+1][y] == 's'
+        west = mapObj[x-1][y] == 's'
+        
+        if ((mapObj[x][y+1] == 's') and  (x == Rockford[0] and y+2 == Rockford[1])):
+            
+            return True
+        
+    
  
 def rockHasToFall(mapObj, gameStateObj):
     global deadRockford
@@ -553,7 +579,14 @@ def runLevel(levels, levelNum):
             if spaceBelowRock:
                 mapNeedsRedraw = True
                 
-        # Manage the aliens' moves
+        # Manage the enemies' moves
+        # https://gameinternals.com/understanding-pac-man-ghost-behavior
+        # Create a cool down period for the animations of the enemies
+        
+        # Move the enemies
+        moveEnemies(mapObj, gameStateObj) 
+        
+        
         
                                 
         DISPLAYSURF.fill(BGCOLOR)
@@ -621,7 +654,7 @@ def main():
     dirt = sprite_sheet_image.subsurface(32, 224, 32, 32)
     space = sprite_sheet_image.subsurface(0, 192, 32, 32)
     diamond = sprite_sheet_image.subsurface(0, 320, 32, 32)
-    alien = sprite_sheet_image.subsurface(224, 288, 32, 32)
+    enemie = sprite_sheet_image.subsurface(224, 288, 32, 32)
     exit = sprite_sheet_image.subsurface(64, 192, 32, 32)
     explosion = sprite_sheet_image.subsurface(96, 0, 32, 32)
     intro_title = pygame.image.load('star_title.png')
@@ -637,7 +670,7 @@ def main():
                   'diamond': diamond,
                   'exit': exit,
                   'explosion': explosion,
-                  'alien' : alien,
+                  'enemie' : enemie,
                   'title': intro_title}
     
     # These dict values are global, and map the character that appears
@@ -649,7 +682,7 @@ def main():
                    'd': IMAGESDICT['diamond'],
                    'e': IMAGESDICT['exit'],
                    'b': IMAGESDICT['explosion'],
-                   'a': IMAGESDICT['alien'],
+                   'a': IMAGESDICT['enemie'],
                    'o': IMAGESDICT['rock']}
     
     PLAYERIMAGES = [IMAGESDICT['Rockford']]
