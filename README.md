@@ -42,4 +42,3 @@ If you were to polish this game further you would want to add things like:
 
 ![Screenshot from 2023-01-14 21-02-34](https://user-images.githubusercontent.com/108932082/212494117-886fc54c-def9-44ac-a325-e5853ecc0de1.png)
 
-# How to install and run the game
