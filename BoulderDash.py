@@ -10,6 +10,7 @@ from pygame.locals import *
 from pygame import mixer
 import datetime
 import time
+import random
 
 FPS = 30 # frames per second to update the screen
 WINWIDTH =1280 # width of the program's window, in pixels
@@ -204,7 +205,8 @@ def readLevelsFile(filename):
             mapObj = []
             gameStateObj = {}
             levelNum += 1
-            print(levels)
+            #print(levels)
+          
     return levels
 
 
@@ -353,13 +355,14 @@ def isLevelFinished(levelObj, gameStateObj):
     
     return False
 
+
 def moveEnemies(mapObj, gameStateObj) :
     Rockford = gameStateObj['player']
     enemies = gameStateObj['enemies']
+    direction = []
     
     # The algo for the move of an enemie
     for x,y in enemies :
-        
         # Generate a list of the possible moves
         # The enemie cannot go back to the previous position unless there is no other option 
         north = mapObj[x][y-1] == 's'
@@ -367,10 +370,25 @@ def moveEnemies(mapObj, gameStateObj) :
         east = mapObj[x+1][y] == 's'
         west = mapObj[x-1][y] == 's'
         
-        if ((mapObj[x][y+1] == 's') and  (x == Rockford[0] and y+2 == Rockford[1])):
-            
-            return True
+        if north == True : direction.append('north')
+        if south == True : direction.append('south')
+        if east == True : direction.append('east')
+        if west == True : direction.append('west')
         
+        if len(direction) > 0 :
+            randomDir = random.randrange(len(direction))
+            print('Random :', randomDir)
+            randomDirection = direction[randomDir]
+            print('randomDirection :', randomDirection)
+            
+            mapObj[x][y] = 's'
+            if randomDirection == 'north' : mapObj[x][y-1] = 'a'
+            if randomDirection == 'south' : mapObj[x][y+1] = 'a'
+            if randomDirection == 'east' : mapObj[x+1][y] = 'a'
+            if randomDirection == 'west' : mapObj[x-1][y] = 'a'
+            
+        return True
+
     
  
 def rockHasToFall(mapObj, gameStateObj):
@@ -584,7 +602,7 @@ def runLevel(levels, levelNum):
         # Create a cool down period for the animations of the enemies
         
         # Move the enemies
-        moveEnemies(mapObj, gameStateObj) 
+        # if moveEnemies(mapObj, gameStateObj) : mapNeedsRedraw = True
         
         
         
