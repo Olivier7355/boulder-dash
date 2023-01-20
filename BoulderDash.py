@@ -357,12 +357,14 @@ def isLevelFinished(levelObj, gameStateObj):
 
 
 def moveEnemies(mapObj, gameStateObj) :
+    global enemieLastDirection, deadRockford
     Rockford = gameStateObj['player']
     enemies = gameStateObj['enemies']
     direction = []
     
     # The algo for the move of an enemie
     for x,y in enemies :
+        
         # Generate a list of the possible moves
         # The enemie cannot go back to the previous position unless there is no other option 
         north = mapObj[x][y-1] == 's'
@@ -370,22 +372,74 @@ def moveEnemies(mapObj, gameStateObj) :
         east = mapObj[x+1][y] == 's'
         west = mapObj[x-1][y] == 's'
         
-        if north == True : direction.append('north')
+        if (north == True) : direction.append('north')
         if south == True : direction.append('south')
         if east == True : direction.append('east')
         if west == True : direction.append('west')
         
-        if len(direction) > 0 :
-            randomDir = random.randrange(len(direction))
-            print('Random :', randomDir)
-            randomDirection = direction[randomDir]
-            print('randomDirection :', randomDirection)
-            
+        if (enemieLastDirection == 'north') and ('north' in direction) and (('east' not in direction) and ('west' not in direction)):
             mapObj[x][y] = 's'
-            if randomDirection == 'north' : mapObj[x][y-1] = 'a'
-            if randomDirection == 'south' : mapObj[x][y+1] = 'a'
-            if randomDirection == 'east' : mapObj[x+1][y] = 'a'
-            if randomDirection == 'west' : mapObj[x-1][y] = 'a'
+            mapObj[x][y-1] = 'a'
+            enemies[0] = (x,y-1)
+            
+        elif (enemieLastDirection == 'south') and ('south' in direction) and (('east' not in direction) and ('west' not in direction)):
+            mapObj[x][y] = 's'
+            mapObj[x][y+1] = 'a'
+            enemies[0] = (x,y+1)
+        elif (enemieLastDirection == 'east') and ('east' in direction) and (('south' not in direction) and ('north' not in direction)):
+            mapObj[x][y] = 's'
+            mapObj[x+1][y] = 'a'
+            enemies[0] = (x+1,y)
+            
+        elif (enemieLastDirection == 'west') and ('west' in direction) and (('south' not in direction) and ('north' not in direction)):
+            mapObj[x][y] = 's'
+            mapObj[x-1][y] = 'a'
+            enemies[0] = (x-1,y)
+            
+        else :
+            if (enemieLastDirection == 'north') and ('north' in direction) and (('east' in direction) or ('west' in direction)):
+                direction.remove('north')
+                
+            elif (enemieLastDirection == 'south') and ('south' in direction) and (('east' in direction) or ('west' in direction)):
+                direction.remove('south')
+                
+            elif (enemieLastDirection == 'east') and ('east' in direction) and (('south' in direction) or ('north' in direction)):
+                direction.remove('east')
+                
+            elif (enemieLastDirection == 'west') and ('west' in direction) and (('south' in direction) or ('north' in direction)):
+                direction.remove('west')
+                 
+            randomDir = random.randrange(len(direction))
+            randomDirection = direction[randomDir]    
+            mapObj[x][y] = 's'
+            if randomDirection == 'north' : 
+                mapObj[x][y-1] = 'a'
+                enemies[0] = (x,y-1)
+            if randomDirection == 'south' : 
+                mapObj[x][y+1] = 'a'
+                enemies[0] = (x,y+1)
+            if randomDirection == 'east' : 
+                mapObj[x+1][y] = 'a'
+                enemies[0] = (x+1,y)
+            if randomDirection == 'west' : 
+                mapObj[x-1][y] = 'a'
+                enemies[0] = (x-1,y)
+            
+            enemieLastDirection = randomDirection
+        
+        if (Rockford[0] in [x, x-1,x+1]) and (Rockford[1] in [y, y-1,y+1]):
+            print('You are dead !')
+            
+            # Display the explosion
+            mapObj[x][y] = 's'
+            for j in range(-1,2) :
+                mapObj[Rockford[0]-1][Rockford[1]+j] = 'b'
+                mapObj[Rockford[0]+1][Rockford[1]+j] = 'b'
+                mapObj[Rockford[0]][Rockford[1]+j] = 'b'
+        
+            explosion_fx.play()
+            deadRockford = True
+            return True   
             
         return True
 
@@ -535,7 +589,7 @@ def updateScoreBoard(gameStateObj):
         
         
 def runLevel(levels, levelNum):
-    global currentImage, diamondsCatched, COUNTER, lives, deadRockford, diamonds_group
+    global currentImage, diamondsCatched, COUNTER, lives, deadRockford, diamonds_group,enemieLastDirection
     COUNTER = 150
     levelObj = levels[levelNum]
     mapObj = levelObj['mapObj']
@@ -543,10 +597,13 @@ def runLevel(levels, levelNum):
     mapNeedsRedraw = True # set to True to call drawMap()
     levelIsComplete = False
     last_update = pygame.time.get_ticks()
+    last_update_enemie = pygame.time.get_ticks()
     animation_cooldown = 50
+    animation_cooldown_enemie = 150
     diamondsCatched = 0
     deadRockford = False
     diamonds_group = pygame.sprite.Group()
+    enemieLastDirection = 'west'
     
     
     while True: # main game loop
@@ -601,8 +658,13 @@ def runLevel(levels, levelNum):
         # https://gameinternals.com/understanding-pac-man-ghost-behavior
         # Create a cool down period for the animations of the enemies
         
-        # Move the enemies
-        # if moveEnemies(mapObj, gameStateObj) : mapNeedsRedraw = True
+        # Create a cool down period for the animations of the enemies       
+        current_time_enemie = pygame.time.get_ticks()
+        if current_time_enemie - last_update_enemie >= animation_cooldown_enemie:
+            last_update_enemie = current_time_enemie
+        
+            # Move the enemies
+            if moveEnemies(mapObj, gameStateObj) : mapNeedsRedraw = True
         
         
         
@@ -710,7 +772,7 @@ def main():
     # Read in the levels from the text file. See the readLevelsFile() for
     # details on the format of this file and how to make your own levels.
     levels = readLevelsFile('BoulderLevels.txt')
-    currentLevelIndex = 1
+    currentLevelIndex = 0
         
     # The main game loop. This loop runs a single level, when the user
     # finishes that level, the next/previous level is loaded.

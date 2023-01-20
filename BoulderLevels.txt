@@ -50,7 +50,7 @@
 #xoxxxxx=xxxoxxx=xxxsxso=xxxxxxx=soxxox#
 #===================s==================#
 #oxssaxx=xxxxoxo=xxxsxxx=xodxxox=xxxxxx#
-#xxxssox=oxxxxxx=xxdsxxx=sxxoxxx=xoxoox#
+#xxxsxox=xxxxxxx=xxdsxxx=sxxoxxx=xoxoox#
 #ssssssssssssssssssssssssssssssssssssss#
 #dxxsxox=oxxxxox=xoxsxxo=xoxoxxx=xxxxxx#
 #xxxxxox=oxxdxxx=xxxsoxx=xxoxxxx=xxxoos#
