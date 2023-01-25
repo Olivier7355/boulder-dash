@@ -321,7 +321,7 @@ def makeMove(mapObj, gameStateObj, playerMoveTo):
         if (playerx + xOffset, playery + yOffset) in diamonds:
             mapObj[playerx + xOffset][playery] ='s'
             diamondsCatched += 1
-            print(diamondsCatched)
+            #print(diamondsCatched)
             collectDiamond_fx.play()
             
             # Delete the diamond from the list of diamonds in the curent level.
@@ -349,7 +349,7 @@ def isLevelFinished(levelObj, gameStateObj):
     door = gameStateObj['door']
     
     if not diamonds and (Rockford[0] == door[0]) and (Rockford[1] == door[1]) :
-        print('Game completed !!!')
+        #print('Game completed !!!')
         finish_fx.play() 
         return True
     
@@ -428,7 +428,7 @@ def moveEnemies(mapObj, gameStateObj) :
             enemieLastDirection = randomDirection
         
         if (Rockford[0] in [x, x-1,x+1]) and (Rockford[1] in [y, y-1,y+1]):
-            print('You are dead !')
+            #print('You are dead !')
             
             # Display the explosion
             mapObj[x][y] = 's'
@@ -458,7 +458,7 @@ def rockHasToFall(mapObj, gameStateObj):
             
             # A rock or a diamond falls on Rockford
             if ((mapObj[x][y+1] == 's') and  (x == Rockford[0] and y+2 == Rockford[1])):
-                print('You are dead !')
+                #print('You are dead !')
                 
                 # Display the explosion
                 mapObj[x][y] = 's'
@@ -471,7 +471,7 @@ def rockHasToFall(mapObj, gameStateObj):
                 deadRockford = True
                 return True
             elif ((mapObj[x][y+1] == 'o') and (mapObj[x-1][y] == 's') and (mapObj[x-1][y+1] == 's') and (x-1 == Rockford[0] and y+2 == Rockford[1])):
-                print('You are dead !')
+                #print('You are dead !')
                 
                 # Display the explosion
                 mapObj[x][y] = 's'
@@ -585,12 +585,9 @@ def updateScoreBoard(gameStateObj):
     draw_text(str(COUNTER), font_score, WHITE, 1200, 710)
     
 
-    
-        
-        
 def runLevel(levels, levelNum):
     global currentImage, diamondsCatched, COUNTER, lives, deadRockford, diamonds_group,enemieLastDirection
-    COUNTER = 150
+    COUNTER = 200
     levelObj = levels[levelNum]
     mapObj = levelObj['mapObj']
     gameStateObj = levelObj['startState']
@@ -628,8 +625,11 @@ def runLevel(levels, levelNum):
                     playerMoveTo = UP
                 elif event.key == K_DOWN:
                     playerMoveTo = DOWN
+                    
+            elif event.type == KEYUP:
+                keyPressed = False
                 
-        if playerMoveTo != None and not levelIsComplete:
+        if playerMoveTo != None and not levelIsComplete :
             # If the player pushed a key to move, make the move
             # (if possible) and push any stars that are pushable.
             moved = makeMove(mapObj, gameStateObj, playerMoveTo)
@@ -655,7 +655,6 @@ def runLevel(levels, levelNum):
                 mapNeedsRedraw = True
                 
         # Manage the enemies' moves
-        # https://gameinternals.com/understanding-pac-man-ghost-behavior
         # Create a cool down period for the animations of the enemies
         
         # Create a cool down period for the animations of the enemies       
@@ -706,8 +705,6 @@ def runLevel(levels, levelNum):
         
         FPSCLOCK.tick()
 
-        
-    
     
 def main():
     global FPSCLOCK, DISPLAYSURF, IMAGESDICT, TILEMAPPING, BASICFONT, PLAYERIMAGES, currentImage, diamondsCatched, old_seconds
@@ -772,7 +769,7 @@ def main():
     # Read in the levels from the text file. See the readLevelsFile() for
     # details on the format of this file and how to make your own levels.
     levels = readLevelsFile('BoulderLevels.txt')
-    currentLevelIndex = 0
+    currentLevelIndex = 5
         
     # The main game loop. This loop runs a single level, when the user
     # finishes that level, the next/previous level is loaded.
