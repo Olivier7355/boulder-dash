@@ -15,8 +15,6 @@ A Boulder Dash clone written in Python with PyGame.
 
 - Stay alive and avoid the aliens !
 
-# Cheat Keys
-
 # Room For Improvement
 This is just a programming experiment of the Boulderdash game mechanics. Therefore it does not include all the features from the [original Boulder Dash version (1984)](https://en.wikipedia.org/wiki/Boulder_Dash) developed by Peter Liepa.
 
@@ -25,7 +23,8 @@ If you were to polish this game further you would want to add things like:
 - Add new levels in BoulderLevels.txt
 - Animate Rockford
 - Create new enemies like flies and blob
-- Transform explosion of bricks and rocks into diamonds 
+- Transform explosion of bricks and rocks into diamonds
+- Add cheat keys to skip levels, get extra lifes, restart the game, ... 
 
 # Screenshot
 
