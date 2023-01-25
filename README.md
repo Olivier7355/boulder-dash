@@ -1,7 +1,5 @@
 # Boulder Dash (PyGame)
 
-# In development...
-
 A Boulder Dash clone written in Python with PyGame.
 
 *The sounds effects are from [irmen/bouldercaves](https://github.com/irmen/bouldercaves) repository.*
