@@ -23,7 +23,7 @@ If you were to polish this game further you would want to add things like:
 - Add new levels in BoulderLevels.txt
 - Animate Rockford
 - Create new enemies like flies and blob
-- Transform explosion of bricks and rocks into diamonds
+- Transform explosion of bricks and rocks into diamonds.
 - Add cheat keys to skip levels, get extra lifes, restart the game, ... 
 
 # Screenshot
